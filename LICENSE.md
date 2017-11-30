@@ -1,2 +1,2 @@
 
-Copyright (C) 2017 
+Copyright © 2017 Ryan Dabler
