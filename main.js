@@ -5,6 +5,8 @@ const APP_STATE = {
                   };
 
 function scrollToFavoritesInput() {
+  APP_STATE.resultType = $("#result-type").find(":selected").val();
+  
   $("#splash-page").addClass("hidden");
   $("#get-favorites").removeClass("hidden");
 }
@@ -46,9 +48,8 @@ function getRecommendationFromTasteDive() {
   const favBook    = $("#favorite-book-txt").val(),
         favBand    = $("#favorite-band-txt").val(),
         favMovie   = $("#favorite-movie-txt").val(),
-        resultType = $("#result-type").find(":selected").val(),
         query      = { q:        `book:${favBook},music:${favBand},movie:${favMovie}`,
-                       type:     `${resultType}`,
+                       type:      APP_STATE.resultType,
                        k:         TASTEDIVE_KEY,
                        callback: "dummyCallback"
                      };
