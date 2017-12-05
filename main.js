@@ -158,13 +158,13 @@ function processTasteDiveResponse(response) {
 }
 
 function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallback) {
-    $.ajax({url:       endpointURL,
-            dataType:  dataType,
-            method:   "GET",
-            data:      queryObj,
-            success:   successCallback,
-            error:     errorCallback
-          });
+  $.ajax({url:       endpointURL,
+          dataType:  dataType,
+          method:   "GET",
+          data:      queryObj,
+          success:   successCallback,
+          error:     errorCallback
+        });
 }
 
 function getRecommendationFromTasteDive() {
