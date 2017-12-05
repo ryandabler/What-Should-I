@@ -14,7 +14,7 @@ function scrollToFavoritesInput() {
 
 function scrollToFavoriteBand(event) {
   if (event.key === "Enter") {
-    $("#favorite-book").blur();
+    $("#favorite-book-txt").blur();
   } else if (event.type === "focusout") {
     $("#favorite-book").addClass("hidden");
     $("#favorite-band").removeClass("hidden");
@@ -23,7 +23,7 @@ function scrollToFavoriteBand(event) {
 
 function scrollToFavoriteMovie(event) {
   if (event.key === "Enter") {
-    $("#favorite-band").blur();
+    $("#favorite-band-txt").blur();
   } else if (event.type === "focusout") {
     $("#favorite-band").addClass("hidden");
     $("#favorite-movie").removeClass("hidden");
