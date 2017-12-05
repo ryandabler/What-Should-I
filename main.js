@@ -44,6 +44,35 @@ function scrollToResults(event) {
 
 function dummyCallback(response) {}
 
+function renderResultToDOM() {
+  $("#results").text(APP_STATE.results[0]);
+}
+
+function processTasteDiveResponse(response) {
+  // Enter the names of the results into application state
+  response.Similar.Results.forEach(elem => APP_STATE.results.push(elem.Name));
+  
+  if (APP_STATE.resultType === "books") {
+    renderResultToDOM();
+  } else if (APP_STATE.resultType === "music") {
+    
+  } else if (APP_STATE.resultType === "movie") {
+    
+  } else {
+    
+  }
+}
+
+function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallback) {
+    $.ajax({url:       endpointURL,
+            dataType:  dataType,
+            method:   "GET",
+            data:      queryObj,
+            success:   successCallback,
+            error:     errorCallback
+          });
+}
+
 function getRecommendationFromTasteDive() {
   const favBook    = $("#favorite-book-txt").val(),
         favBand    = $("#favorite-band-txt").val(),
@@ -54,13 +83,12 @@ function getRecommendationFromTasteDive() {
                        callback: "dummyCallback"
                      };
   
-  $.ajax({url:       TASTEDIVE_API_ENDPOINT,
-          dataType: "jsonp",
-          method:   "GET",
-          data:      query,
-          success:   function(response) {console.log("successsssss", response);},
-          error:     function(xhr, status) {console.log("errorrrrr", xhr, status);}
-        });
+  queryAPI( TASTEDIVE_API_ENDPOINT,
+           "jsonp",
+            query,
+            processTasteDiveResponse,
+            function(xhr, status) {console.log("errorrrrr", xhr, status)}
+          );
 }
 
 function addEventListeners() {
