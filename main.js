@@ -1,7 +1,8 @@
 const TASTEDIVE_API_ENDPOINT = "https://tastedive.com/api/similar";
 const APP_STATE = {
-                    resultType: null,
-                    resultItems: []
+                    resultType:   null,
+                    results:      [],
+                    sidebarItems: []
                   };
 
 function scrollToFavoritesInput() {
