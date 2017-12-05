@@ -1,13 +1,15 @@
 const TASTEDIVE_API_ENDPOINT = "https://tastedive.com/api/similar";
 const GOOGLE_BOOKS_API_ENDPOINT = "https://www.googleapis.com/books/v1/volumes";
 const GOODREADS_API_ENDPOINT = ["https://www.goodreads.com/book/isbn/", "?format=json&key="];
+const LIBRIVOX_API_ENDPOINT = "https://librivox.org/api/feed/audiobooks/";
 const APP_STATE = {
                     resultType:     null,
                     results:        [],
                     sidebarItems:   [],
                     resultMetadata: { google:    null,
-                                      goodreads: null
-                    }
+                                      goodreads: null,
+                                      librivox:  null
+                                    }
                   };
 
 function scrollToFavoritesInput() {
@@ -67,6 +69,34 @@ function dummyCallback(response) {}
 
 function renderResultToDOM() {
   $("#results").text(APP_STATE.results[0]);
+}
+
+function stripArticleFromTitle(title) {
+  return title.replace(/^The |^A /, "");
+}
+
+function processLibrivoxResponse(response) {
+  if (response.hasOwnProperty("error")) {
+    APP_STATE.resultMetadata.librivox = "error";
+  } else {
+    APP_STATE.resultMetadata.librivox = response.books[0];
+    console.log(APP_STATE.resultMetadata.librivox);
+  }
+}
+
+function getInformationFromLibrivox(title) {
+  title = stripArticleFromTitle(title);
+  const query = { title:     title,
+                  format:   "jsonp",
+                  callback: "processLibrivoxResponse"
+                };
+  
+  queryAPI( LIBRIVOX_API_ENDPOINT,
+           "jsonp",
+            query,
+            dummyCallback,
+            dummyCallback // Error event always fires after success callback
+          );
 }
 
 function createGoodReadsReviewIframe(response) {
