@@ -2,9 +2,12 @@ const TASTEDIVE_API_ENDPOINT = "https://tastedive.com/api/similar";
 const GOOGLE_BOOKS_API_ENDPOINT = "https://www.googleapis.com/books/v1/volumes";
 const GOODREADS_API_ENDPOINT = ["https://www.goodreads.com/book/isbn/", "?format=json&key="];
 const APP_STATE = {
-                    resultType:   null,
-                    results:      [],
-                    sidebarItems: []
+                    resultType:     null,
+                    results:        [],
+                    sidebarItems:   [],
+                    resultMetadata: { google:    null,
+                                      goodreads: null
+                    }
                   };
 
 function scrollToFavoritesInput() {
