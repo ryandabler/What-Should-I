@@ -65,7 +65,7 @@ function scrollToResults(event) {
   }
 }
 
-function dummyCallback(response) {}
+function dummyCallback(response) { console.log("dummy"); }
 
 function renderResultToDOM() {
   $("#results").text(APP_STATE.results[0]);
