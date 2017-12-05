@@ -69,12 +69,50 @@ function renderResultToDOM() {
   $("#results").text(APP_STATE.results[0]);
 }
 
+function createGoodReadsReviewIframe(response) {
+    $("#results").append(response.reviews_widget);
+}
+
+function getInformationFromGoodReads() {
+  let [grEndpoint1, grEndpoint2] = GOODREADS_API_ENDPOINT;
+  $.ajax({url:    `${grEndpoint1}184765228X${grEndpoint2}SW7VcKu72oTc6cyhQFiLQ`,
+        dataType: "jsonp",
+        method:   "GET",
+        success:   createGoodReadsReviewIframe,
+        error:     function(xhr, status) {console.log("error",xhr, status);}
+        });
+}
+
+function processGoogleResponse(response) {
+  APP_STATE.resultMetadata.google = response.items[0];
+}
+
+function getInformationFromGoogle(bookTitle) {
+  let query = { q:          bookTitle,
+                key:        GOOGLE_BOOKS_KEY,
+                maxResults: 1,
+                fields:    "items(volumeInfo/title,volumeInfo/authors,volumeInfo/previewLink,volumeInfo/imageLinks,volumeInfo/description,volumeInfo/industryIdentifiers)"
+              };
+  
+  queryAPI(GOOGLE_BOOKS_API_ENDPOINT,
+           "json",
+           query,
+           processGoogleResponse,
+           function(xhr, status) {console.log(xhr, status);}
+          );
+}
+
+function getBookMetadata(bookTitle) {
+  getInformationFromGoogle(bookTitle);
+}
+
 function processTasteDiveResponse(response) {
   // Enter the names of the results into application state
   response.Similar.Results.forEach(elem => APP_STATE.results.push(elem.Name));
   
   if (APP_STATE.resultType === "books") {
     renderResultToDOM();
+    getBookMetadata(APP_STATE.results[0]);
   } else if (APP_STATE.resultType === "music") {
     
   } else if (APP_STATE.resultType === "movie") {
