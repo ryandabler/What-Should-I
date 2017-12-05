@@ -14,6 +14,11 @@ function scrollToFavoritesInput() {
 
 function scrollToFavoriteBand(event) {
   if (event.key === "Enter") {
+    // Blur input box to force the focusout event to fire.
+    // This prevents duplicate API calls because all action
+    // is pushed to the focusout event rather than the keypress
+    // event while still maintaining the appearance of both
+    // causing the app to progress.
     $("#favorite-book-txt").blur();
   } else if (event.type === "focusout") {
     $("#favorite-book").addClass("hidden");
@@ -23,6 +28,11 @@ function scrollToFavoriteBand(event) {
 
 function scrollToFavoriteMovie(event) {
   if (event.key === "Enter") {
+    // Blur input box to force the focusout event to fire.
+    // This prevents duplicate API calls because all action
+    // is pushed to the focusout event rather than the keypress
+    // event while still maintaining the appearance of both
+    // causing the app to progress.
     $("#favorite-band-txt").blur();
   } else if (event.type === "focusout") {
     $("#favorite-band").addClass("hidden");
@@ -32,6 +42,11 @@ function scrollToFavoriteMovie(event) {
 
 function scrollToResults(event) {
   if (event.key === "Enter") {
+    // Blur input box to force the focusout event to fire.
+    // This prevents duplicate API calls because all action
+    // is pushed to the focusout event rather than the keypress
+    // event while still maintaining the appearance of both
+    // causing the app to progress.
     $("#favorite-movie-txt").blur();
   } else if (event.type === "focusout") {
     // Get TasteDive data
