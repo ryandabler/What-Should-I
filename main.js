@@ -84,7 +84,7 @@ function getInformationFromGoodReads() {
 }
 
 function processGoogleResponse(response) {
-  APP_STATE.resultMetadata.google = response.items[0];
+  APP_STATE.resultMetadata.google = response.items[0].volumeInfo;
 }
 
 function getInformationFromGoogle(bookTitle) {
