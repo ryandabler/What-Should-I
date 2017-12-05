@@ -70,21 +70,26 @@ function renderResultToDOM() {
 }
 
 function createGoodReadsReviewIframe(response) {
-    $("#results").append(response.reviews_widget);
+  APP_STATE.resultMetadata.goodreads = response;
+  $("#results").append(response.reviews_widget);
 }
 
-function getInformationFromGoodReads() {
-  let [grEndpoint1, grEndpoint2] = GOODREADS_API_ENDPOINT;
-  $.ajax({url:    `${grEndpoint1}184765228X${grEndpoint2}SW7VcKu72oTc6cyhQFiLQ`,
-        dataType: "jsonp",
-        method:   "GET",
-        success:   createGoodReadsReviewIframe,
-        error:     function(xhr, status) {console.log("error",xhr, status);}
-        });
+function getInformationFromGoodReads(isbn) {
+  let url = `${GOODREADS_API_ENDPOINT[0]}${isbn}${GOODREADS_API_ENDPOINT[1]}${GOODREADS_KEY}`;
+  
+  queryAPI( url,
+           "jsonp",
+            {},
+            createGoodReadsReviewIframe,
+            function(xhr, status) {console.log("error",xhr, status);}
+          );
 }
 
 function processGoogleResponse(response) {
   APP_STATE.resultMetadata.google = response.items[0].volumeInfo;
+  
+  let isbn = APP_STATE.resultMetadata.google.industryIdentifiers[0].identifier;
+  getInformationFromGoodReads(isbn);
 }
 
 function getInformationFromGoogle(bookTitle) {
