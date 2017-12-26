@@ -69,10 +69,73 @@ function scrollToResults(event) {
 
 function dummyCallback(response) { console.log("dummy"); }
 
+function generateReviewHTML(review) {
+  let $review  = $("<article>"),
+      $source  = $("<a>"),
+      $snippet = $("<p>");
+  
+  // Process source link
+  $source.attr("href", review.review_link);
+  $source.addClass("review-source");
+  $source.text(review.source);
+  
+  // Process snippet
+  $snippet.addClass("review-snippet");
+  $snippet.text(review.snippet);
+  
+  // Put everything together
+  $review.addClass("book-review");
+  $review.append( [$source, $snippet] );
+  return $review;
+}
+
+function generateBookResultHTML() {
+  let $mainInfoSec = $("<section>"),
+      $reviewSec   = $("<section>"),
+      $coverImg    = $("<img>"),
+      reviewsHTML  = [];
+  
+  // Set image attributes
+  $coverImg.attr("src", APP_STATE.resultMetadata.google.imageLinks.thumbnail);
+  $coverImg.attr("id", "cover-image");
+  
+  // Generate reviews
+  APP_STATE.resultMetadata.iDreamBooks.critic_reviews.forEach(review => reviewsHTML.push(generateReviewHTML(review)));
+  $reviewSec.append(reviewsHTML);
+  $reviewSec.addClass("book-reviews");
+  
+  // Create main info section
+  let title   = APP_STATE.results[0],
+      authors = APP_STATE.resultMetadata.google.authors,
+      desc    = APP_STATE.resultMetadata.google.description,
+      $title  = $("<h1>"),
+      $author = $("<span>"),
+      $desc   = $("<p>");
+  
+  $author.text(authors.join(", "));
+  $author.addClass("book-authors");
+  
+  $title.text(title + " by ");
+  $title.addClass("book-title");
+  $title.append($author);
+  
+  $desc.text(desc);
+  $desc.addClass("book-description");
+  
+  $mainInfoSec.append($title)
+              .append($coverImg)
+              .append($desc);
+  $mainInfoSec.addClass("book-info");
+  
+  return [$mainInfoSec, $reviewSec];
+}
+
 function renderResultToDOM() {
+  let htmlSections;
+  
   if (APP_STATE.resultType === "books") {
-    generateBookResultHTML();
-    $("#results").text(APP_STATE.results[0]);
+    htmlSections = generateBookResultHTML();
+    $("#results").html(htmlSections);
   } else if (APP_STATE.resultType === "music") {
     
   } else if (APP_STATE.resultType === "movie") {
