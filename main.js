@@ -2,13 +2,15 @@ const TASTEDIVE_API_ENDPOINT = "https://tastedive.com/api/similar";
 const GOOGLE_BOOKS_API_ENDPOINT = "https://www.googleapis.com/books/v1/volumes";
 const GOODREADS_API_ENDPOINT = ["https://www.goodreads.com/book/isbn/", "?format=json&key="];
 const LIBRIVOX_API_ENDPOINT = "https://librivox.org/api/feed/audiobooks/";
+const IDREAMBOOKS_API_ENDPOINT = "http://idreambooks.com/api/books/reviews.json";
 const APP_STATE = {
                     resultType:     null,
                     results:        [],
                     sidebarItems:   [],
-                    resultMetadata: { google:    null,
-                                      goodreads: null,
-                                      librivox:  null
+                    resultMetadata: { google:      null,
+                                      //goodreads: null,
+                                      librivox:    null,
+                                      iDreamBooks: null
                                     }
                   };
 
@@ -67,12 +69,84 @@ function scrollToResults(event) {
 
 function dummyCallback(response) { console.log("dummy"); }
 
+function generateReviewHTML(review) {
+  let $review  = $("<article>"),
+      $source  = $("<a>"),
+      $snippet = $("<p>");
+  
+  // Process source link
+  $source.attr("href", review.review_link);
+  $source.addClass("review-source");
+  $source.text(review.source);
+  
+  // Process snippet
+  $snippet.addClass("review-snippet");
+  $snippet.text(review.snippet);
+  
+  // Put everything together
+  $review.addClass("book-review");
+  $review.append( [$source, $snippet] );
+  return $review;
+}
+
+function generateBookResultHTML() {
+  let $mainInfoSec = $("<section>"),
+      $reviewSec   = $("<section>"),
+      $coverImg    = $("<img>"),
+      reviewsHTML  = [];
+  
+  // Set image attributes
+  $coverImg.attr("src", APP_STATE.resultMetadata.google.imageLinks.thumbnail);
+  $coverImg.attr("id", "cover-image");
+  
+  // Generate reviews
+  APP_STATE.resultMetadata.iDreamBooks.critic_reviews.forEach(review => reviewsHTML.push(generateReviewHTML(review)));
+  $reviewSec.append(reviewsHTML);
+  $reviewSec.addClass("book-reviews");
+  
+  // Create main info section
+  let title   = APP_STATE.results[0],
+      authors = APP_STATE.resultMetadata.google.authors,
+      desc    = APP_STATE.resultMetadata.google.description,
+      $title  = $("<h1>"),
+      $author = $("<span>"),
+      $desc   = $("<p>");
+  
+  $author.text(authors.join(", "));
+  $author.addClass("book-authors");
+  
+  $title.text(title + " by ");
+  $title.addClass("book-title");
+  $title.append($author);
+  
+  $desc.text(desc);
+  $desc.addClass("book-description");
+  
+  $mainInfoSec.append($title)
+              .append($coverImg)
+              .append($desc);
+  $mainInfoSec.addClass("book-info");
+  
+  return [$mainInfoSec, $reviewSec];
+}
+
 function renderResultToDOM() {
-  $("#results").text(APP_STATE.results[0]);
+  let htmlSections;
+  
+  if (APP_STATE.resultType === "books") {
+    htmlSections = generateBookResultHTML();
+    $("#results").html(htmlSections);
+  } else if (APP_STATE.resultType === "music") {
+    
+  } else if (APP_STATE.resultType === "movie") {
+    
+  } else {
+    
+  }
 }
 
 function stripArticleFromTitle(title) {
-  return title.replace(/^The |^A /, "");
+  return title.replace(/^The |^An? /, "");
 }
 
 function processLibrivoxResponse(response) {
@@ -99,18 +173,38 @@ function getInformationFromLibrivox(title) {
           );
 }
 
-function createGoodReadsReviewIframe(response) {
-  APP_STATE.resultMetadata.goodreads = response;
-  $("#results").append(response.reviews_widget);
+// function createGoodReadsReviewIframe(response) {
+//   APP_STATE.resultMetadata.goodreads = response;
+//   $("#results").append(response.reviews_widget);
+// }
+
+// function getInformationFromGoodReads(isbn) {
+//   let url = `${GOODREADS_API_ENDPOINT[0]}${isbn}${GOODREADS_API_ENDPOINT[1]}${GOODREADS_KEY}`;
+  
+//   queryAPI( url,
+//           "jsonp",
+//             {},
+//             createGoodReadsReviewIframe,
+//             function(xhr, status) {console.log("error",xhr, status);}
+//           );
+// }
+
+function processIDreamBooksResponse(response) {
+  APP_STATE.resultMetadata.iDreamBooks = response.book;
+  console.log(response);
+  
+  renderResultToDOM();
 }
 
-function getInformationFromGoodReads(isbn) {
-  let url = `${GOODREADS_API_ENDPOINT[0]}${isbn}${GOODREADS_API_ENDPOINT[1]}${GOODREADS_KEY}`;
-  
-  queryAPI( url,
-           "jsonp",
-            {},
-            createGoodReadsReviewIframe,
+function getInformationFromIDreamBooks(isbn) {
+  let queryParams = { q: isbn,
+                      key: IDREAMBOOKS_KEY
+                    };
+                    
+  queryAPI( IDREAMBOOKS_API_ENDPOINT,
+           "json",
+            queryParams,
+            processIDreamBooksResponse,
             function(xhr, status) {console.log("error",xhr, status);}
           );
 }
@@ -119,7 +213,8 @@ function processGoogleResponse(response) {
   APP_STATE.resultMetadata.google = response.items[0].volumeInfo;
   
   let isbn = APP_STATE.resultMetadata.google.industryIdentifiers[0].identifier;
-  getInformationFromGoodReads(isbn);
+  //getInformationFromGoodReads(isbn);
+  getInformationFromIDreamBooks(isbn);
 }
 
 function getInformationFromGoogle(bookTitle) {
@@ -146,7 +241,7 @@ function processTasteDiveResponse(response) {
   response.Similar.Results.forEach(elem => APP_STATE.results.push(elem.Name));
   
   if (APP_STATE.resultType === "books") {
-    renderResultToDOM();
+    //renderResultToDOM();
     getBookMetadata(APP_STATE.results[0]);
   } else if (APP_STATE.resultType === "music") {
     
