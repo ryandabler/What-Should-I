@@ -19,6 +19,7 @@ function scrollToFavoritesInput() {
   
   $("#splash-page").addClass("hidden");
   $("#get-favorites").removeClass("hidden");
+  $("#favorite-book-txt").focus();
 }
 
 function scrollToFavoriteBand(event) {
@@ -32,6 +33,7 @@ function scrollToFavoriteBand(event) {
   } else if (event.type === "focusout") {
     $("#favorite-book").addClass("hidden");
     $("#favorite-band").removeClass("hidden");
+    $("#favorite-band-txt").focus();
   }
 }
 
@@ -46,6 +48,7 @@ function scrollToFavoriteMovie(event) {
   } else if (event.type === "focusout") {
     $("#favorite-band").addClass("hidden");
     $("#favorite-movie").removeClass("hidden");
+    $("#favorite-movie-txt").focus();
   }
 }
 
@@ -89,20 +92,30 @@ function generateReviewHTML(review) {
   return $review;
 }
 
+function generateReviewSection($reviewSec) {
+  let reviewsHTML = [],
+      $h1         = $("<h1>");
+      
+  APP_STATE.resultMetadata.iDreamBooks.critic_reviews.forEach(review => reviewsHTML.push(generateReviewHTML(review)));
+  
+  $h1.text("Reviews");
+  $h1.addClass("review-header");
+  
+  $reviewSec.append($h1, reviewsHTML);
+  $reviewSec.addClass("book-reviews");
+}
+
 function generateBookResultHTML() {
   let $mainInfoSec = $("<section>"),
       $reviewSec   = $("<section>"),
-      $coverImg    = $("<img>"),
-      reviewsHTML  = [];
+      $coverImg    = $("<img>");
   
   // Set image attributes
   $coverImg.attr("src", APP_STATE.resultMetadata.google.imageLinks.thumbnail);
   $coverImg.attr("id", "cover-image");
   
   // Generate reviews
-  APP_STATE.resultMetadata.iDreamBooks.critic_reviews.forEach(review => reviewsHTML.push(generateReviewHTML(review)));
-  $reviewSec.append(reviewsHTML);
-  $reviewSec.addClass("book-reviews");
+  generateReviewSection($reviewSec);
   
   // Create main info section
   let title   = APP_STATE.results[0],
@@ -112,12 +125,12 @@ function generateBookResultHTML() {
       $author = $("<span>"),
       $desc   = $("<p>");
   
-  $author.text(authors.join(", "));
+  $author.text(" by " + authors.join(", "));
   $author.addClass("book-authors");
   
-  $title.text(title + " by ");
-  $title.addClass("book-title");
+  $title.text(title);
   $title.append($author);
+  $title.addClass("book-title");
   
   $desc.text(desc);
   $desc.addClass("book-description");
