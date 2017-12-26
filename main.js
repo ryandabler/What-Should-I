@@ -83,7 +83,7 @@ function renderResultToDOM() {
 }
 
 function stripArticleFromTitle(title) {
-  return title.replace(/^The |^A /, "");
+  return title.replace(/^The |^An? /, "");
 }
 
 function processLibrivoxResponse(response) {
