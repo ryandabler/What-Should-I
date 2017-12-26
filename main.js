@@ -169,7 +169,7 @@ function processTasteDiveResponse(response) {
   response.Similar.Results.forEach(elem => APP_STATE.results.push(elem.Name));
   
   if (APP_STATE.resultType === "books") {
-    renderResultToDOM();
+    //renderResultToDOM();
     getBookMetadata(APP_STATE.results[0]);
   } else if (APP_STATE.resultType === "music") {
     
