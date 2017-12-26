@@ -88,6 +88,11 @@ body {
   font-size: 20px;
 }
 
+.book-cover {
+  margin: auto;
+  display: block;
+}
+
 .book-info, .book-reviews {
   background-color: var(--color-dark);
   padding: 10px;
