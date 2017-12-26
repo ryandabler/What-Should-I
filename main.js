@@ -199,6 +199,7 @@ function addEventListeners() {
 }
 
 function initApp() {
+  
   addEventListeners();
 }
 
