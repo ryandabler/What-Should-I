@@ -65,7 +65,7 @@ body {
 
 #results {
   width: 80%;
-  margin: 0 auto;
+  margin: 10px auto;
 }
 
 #results p {
@@ -92,6 +92,11 @@ body {
   background-color: var(--color-dark);
   padding: 10px;
   border-radius: 10px;
+}
+
+.review-header {
+  font-size: 25px;
+  margin: 0 0 10px 0;
 }
 
 .book-review:not(:last-child) {
