@@ -125,12 +125,12 @@ function generateBookResultHTML() {
       $author = $("<span>"),
       $desc   = $("<p>");
   
-  $author.text(authors.join(", "));
+  $author.text(" by " + authors.join(", "));
   $author.addClass("book-authors");
   
-  $title.text(title + " by ");
-  $title.addClass("book-title");
+  $title.text(title);
   $title.append($author);
+  $title.addClass("book-title");
   
   $desc.text(desc);
   $desc.addClass("book-description");
