@@ -2,13 +2,15 @@ const TASTEDIVE_API_ENDPOINT = "https://tastedive.com/api/similar";
 const GOOGLE_BOOKS_API_ENDPOINT = "https://www.googleapis.com/books/v1/volumes";
 const GOODREADS_API_ENDPOINT = ["https://www.goodreads.com/book/isbn/", "?format=json&key="];
 const LIBRIVOX_API_ENDPOINT = "https://librivox.org/api/feed/audiobooks/";
+const IDREAMBOOKS_API_ENDPOINT = "http://idreambooks.com/api/books/reviews.json";
 const APP_STATE = {
                     resultType:     null,
                     results:        [],
                     sidebarItems:   [],
-                    resultMetadata: { google:    null,
-                                      goodreads: null,
-                                      librivox:  null
+                    resultMetadata: { google:      null,
+                                      //goodreads: null,
+                                      librivox:    null,
+                                      iDreamBooks: null
                                     }
                   };
 
@@ -99,18 +101,38 @@ function getInformationFromLibrivox(title) {
           );
 }
 
-function createGoodReadsReviewIframe(response) {
-  APP_STATE.resultMetadata.goodreads = response;
-  $("#results").append(response.reviews_widget);
+// function createGoodReadsReviewIframe(response) {
+//   APP_STATE.resultMetadata.goodreads = response;
+//   $("#results").append(response.reviews_widget);
+// }
+
+// function getInformationFromGoodReads(isbn) {
+//   let url = `${GOODREADS_API_ENDPOINT[0]}${isbn}${GOODREADS_API_ENDPOINT[1]}${GOODREADS_KEY}`;
+  
+//   queryAPI( url,
+//           "jsonp",
+//             {},
+//             createGoodReadsReviewIframe,
+//             function(xhr, status) {console.log("error",xhr, status);}
+//           );
+// }
+
+function processIDreamBooksResponse(response) {
+  APP_STATE.resultMetadata.iDreamBooks = response.book;
+  console.log(response);
+  
+  renderResultToDOM();
 }
 
-function getInformationFromGoodReads(isbn) {
-  let url = `${GOODREADS_API_ENDPOINT[0]}${isbn}${GOODREADS_API_ENDPOINT[1]}${GOODREADS_KEY}`;
-  
-  queryAPI( url,
-           "jsonp",
-            {},
-            createGoodReadsReviewIframe,
+function getInformationFromIDreamBooks(isbn) {
+  let queryParams = { q: isbn,
+                      key: IDREAMBOOKS_KEY
+                    };
+                    
+  queryAPI( IDREAMBOOKS_API_ENDPOINT,
+           "json",
+            queryParams,
+            processIDreamBooksResponse,
             function(xhr, status) {console.log("error",xhr, status);}
           );
 }
@@ -119,7 +141,8 @@ function processGoogleResponse(response) {
   APP_STATE.resultMetadata.google = response.items[0].volumeInfo;
   
   let isbn = APP_STATE.resultMetadata.google.industryIdentifiers[0].identifier;
-  getInformationFromGoodReads(isbn);
+  //getInformationFromGoodReads(isbn);
+  getInformationFromIDreamBooks(isbn);
 }
 
 function getInformationFromGoogle(bookTitle) {
