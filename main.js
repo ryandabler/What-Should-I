@@ -70,7 +70,16 @@ function scrollToResults(event) {
 function dummyCallback(response) { console.log("dummy"); }
 
 function renderResultToDOM() {
-  $("#results").text(APP_STATE.results[0]);
+  if (APP_STATE.resultType === "books") {
+    generateBookResultHTML();
+    $("#results").text(APP_STATE.results[0]);
+  } else if (APP_STATE.resultType === "music") {
+    
+  } else if (APP_STATE.resultType === "movie") {
+    
+  } else {
+    
+  }
 }
 
 function stripArticleFromTitle(title) {
