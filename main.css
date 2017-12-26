@@ -5,6 +5,7 @@
   --color-dark: #36393B;
   --color-light: #EFF8E2;
   --color-pop: #F9EFC1;
+  --color-link: #AD8A64;
 }
 
 * {
@@ -46,7 +47,7 @@ body {
 }
 
 #result-type:focus {
-  outline: none;
+  outline: 1px solid var(--color-pop);
 }
 
 .content-input {
@@ -55,6 +56,11 @@ body {
   border: none;
   background-color: var(--color-darker);
   color: var(--color-pop);
+  caret-color: var(--color-pop);
+}
+
+.content-input:focus {
+  outline: 1px solid var(--color-pop);
 }
 
 #results {
@@ -63,10 +69,10 @@ body {
 }
 
 #results p {
-  margin-bottom: 0;
+  margin: 0;
 }
 
-#results:not(:last-child) {
+#results section:not(:last-child) {
   margin-bottom: 10px;
 }
 
@@ -86,6 +92,14 @@ body {
   background-color: var(--color-dark);
   padding: 10px;
   border-radius: 10px;
+}
+
+.book-review:not(:last-child) {
+  margin-bottom: 10px;
+}
+
+.book-review a {
+  color: var(--color-link);
 }
 
 @media only screen and (min-width: 640px) {
