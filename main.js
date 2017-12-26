@@ -19,6 +19,7 @@ function scrollToFavoritesInput() {
   
   $("#splash-page").addClass("hidden");
   $("#get-favorites").removeClass("hidden");
+  $("#favorite-book-txt").focus();
 }
 
 function scrollToFavoriteBand(event) {
@@ -32,6 +33,7 @@ function scrollToFavoriteBand(event) {
   } else if (event.type === "focusout") {
     $("#favorite-book").addClass("hidden");
     $("#favorite-band").removeClass("hidden");
+    $("#favorite-band-txt").focus();
   }
 }
 
@@ -46,6 +48,7 @@ function scrollToFavoriteMovie(event) {
   } else if (event.type === "focusout") {
     $("#favorite-band").addClass("hidden");
     $("#favorite-movie").removeClass("hidden");
+    $("#favorite-movie-txt").focus();
   }
 }
 
