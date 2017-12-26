@@ -88,7 +88,7 @@ body {
   font-size: 20px;
 }
 
-.book-cover {
+#cover-image {
   margin: auto;
   display: block;
 }
