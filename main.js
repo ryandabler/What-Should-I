@@ -266,7 +266,7 @@ function getArtistInformationFromSpotify(spotifyId) {
 function processMusicGraphAlbumResponse(response) {
   APP_STATE.resultMetadata.musicGraph.albums = response.data;
   
-  getArtistInformationFromSpotify(spotifyId);
+  getArtistInformationFromSpotify(APP_STATE.resultMetadata.musicGraph.artist.spotify_id);
 }
 
 function getArtistAlbums(artistId) {
