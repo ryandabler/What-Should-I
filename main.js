@@ -290,7 +290,8 @@ function processMusicGraphArtistResponse(response) {
 
 function getArtistInformationFromMusicGraph(artistName) {
   query = { api_key: MUSICGRAPH_KEY,
-            name:    artistName
+            name:    artistName,
+            limit:   1
           };
           
   queryAPI( MUSICGRAPH_API_ENDPOINT + "search",
