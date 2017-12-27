@@ -322,14 +322,19 @@ function processTasteDiveResponse(response) {
   }
 }
 
-function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallback) {
-  $.ajax({url:       endpointURL,
-          dataType:  dataType,
-          method:   "GET",
-          data:      queryObj,
-          success:   successCallback,
-          error:     errorCallback
-        });
+function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallback, header = null) {
+  let ajaxRequestObject = {url:       endpointURL,
+                           dataType:  dataType,
+                           method:   "GET",
+                           data:      queryObj,
+                           success:   successCallback,
+                           error:     errorCallback
+                          };
+  if (header !== null) {
+    ajaxRequestObject.headers = header;
+  }
+  
+  $.ajax(ajaxRequestObject);
 }
 
 function getRecommendationFromTasteDive() {
