@@ -283,7 +283,7 @@ function getArtistAlbums(artistId) {
 }
 
 function processMusicGraphArtistResponse(response) {
-  APP_STATE.resultMetadata.musicGraph.artist = response.data;
+  APP_STATE.resultMetadata.musicGraph.artist = response.data[0];
   
   getArtistAlbums(APP_STATE.resultMetadata.musicGraph.artist.id);
 }
