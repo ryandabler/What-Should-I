@@ -76,7 +76,7 @@ body {
   margin-bottom: 10px;
 }
 
-.book-title {
+.book-title, .artist {
   font-size: 30px;
   color: var(--color-pop);
   margin-top: 0;
