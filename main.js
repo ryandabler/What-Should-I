@@ -147,15 +147,65 @@ function generateBookResultHTML() {
   return [$mainInfoSec, $reviewSec];
 }
 
+function generateAlbumHTML(album) {
+  let $album = $("<li>"),
+      $year  = $("<span>");
+  
+  $year.addClass("album-year");
+  $year.text(album.release_year);
+  
+  $album.addClass("album");
+  $album.text(album.title);
+  $album.append($year);
+  
+  return $album;
+}
+
+function generateAlbumsSection($albumsSec) {
+  let albumsHTML = [],
+      $h1        = $("<h1>");
+      $albumList = $("<ul>");
+      
+  APP_STATE.resultMetadata.musicGraph.albums.forEach(album => albumsHTML.push(generateAlbumHTML(album)));
+  
+  $h1.text("Discography");
+  $h1.addClass("discography-header");
+  
+  $albumList.append(albumsHTML);
+  
+  $albumsSec.append($h1, $albumList);
+  $albumsSec.addClass("discography");
+}
+
 function generateMusicResultHTML() {
-  let $mainInfoSec = $("<section>");
+  let $mainInfoSec = $("<section>"),
+      $albumsSec   = $("<section>"),
+      $artistImg   = $("<img>");
+  
+  // Set image
+  $artistImg.attr("src", APP_STATE.resultMetadata.spotify.images[0].url);
+  $artistImg.attr("id", "cover-image");
+  
+  // Generate discography
+  generateAlbumsSection($albumsSec);
   
   // Create main info section
   let artist  = APP_STATE.results[0],
-      $artist = $("<h1>");
+      genre   = APP_STATE.resultMetadata.musicGraph.artist.main_genre;
+      $artist = $("<h1>"),
+      $genre  = $("<span>");
       
-  $artist.text(artist);
+  $genre.text(`(${genre})`);
+  $genre.addClass("genre");
+  
+  $artist.text(`${artist} `);
+  $artist.append($genre);
   $artist.addClass("artist");
+  
+  $mainInfoSec.append( [$artist, $artistImg] );
+  $mainInfoSec.addClass("artist-info");
+  
+  return [ $mainInfoSec, $albumsSec ];
 }
 
 function renderResultToDOM() {
@@ -249,8 +299,9 @@ function getBookMetadata(bookTitle) {
 }
 
 function processSpotifyResponse(response) {
-  console.log(response);
   APP_STATE.resultMetadata.spotify = response;
+  
+  renderResultToDOM();
 }
 
 function getArtistInformationFromSpotify(spotifyId) {
@@ -314,7 +365,6 @@ function processTasteDiveResponse(response) {
     //renderResultToDOM();
     getBookMetadata(APP_STATE.results[0]);
   } else if (APP_STATE.resultType === "music") {
-    console.log(APP_STATE);
     getArtistMetadata(APP_STATE.results[0]);
   } else if (APP_STATE.resultType === "movie") {
     
