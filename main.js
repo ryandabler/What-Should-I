@@ -1,10 +1,10 @@
-const TASTEDIVE_API_ENDPOINT = "https://tastedive.com/api/similar";
-const GOOGLE_BOOKS_API_ENDPOINT = "https://www.googleapis.com/books/v1/volumes";
-const LIBRIVOX_API_ENDPOINT = "https://librivox.org/api/feed/audiobooks/";
-const IDREAMBOOKS_API_ENDPOINT = "http://idreambooks.com/api/books/reviews.json";
-const MUSICGRAPH_API_ENDPOINT = "http://api.musicgraph.com/api/v2/artist/";
-const SPOTIFY_API_ENDPOINT = "https://api.spotify.com/v1/artists/";
-const APP_STATE = {
+const TASTEDIVE_API_ENDPOINT    = "https://tastedive.com/api/similar",
+      GOOGLE_BOOKS_API_ENDPOINT = "https://www.googleapis.com/books/v1/volumes",
+      LIBRIVOX_API_ENDPOINT     = "https://librivox.org/api/feed/audiobooks/",
+      IDREAMBOOKS_API_ENDPOINT  = "http://idreambooks.com/api/books/reviews.json",
+      MUSICGRAPH_API_ENDPOINT   = "http://api.musicgraph.com/api/v2/artist/",
+      SPOTIFY_API_ENDPOINT      = "https://api.spotify.com/v1/artists/",
+      APP_STATE = {
                     resultType:     null,
                     results:        [],
                     sidebarItems:   [],
@@ -129,7 +129,7 @@ function generateBookResultHTML() {
       $author = $("<span>"),
       $desc   = $("<p>");
   
-  $author.text(" by " + authors.join(", "));
+  $author.text(` by ${authors.join(", ")}`);
   $author.addClass("book-authors");
   
   $title.text(title);
@@ -139,12 +139,10 @@ function generateBookResultHTML() {
   $desc.text(desc);
   $desc.addClass("book-description");
   
-  $mainInfoSec.append($title)
-              .append($coverImg)
-              .append($desc);
+  $mainInfoSec.append( [$title, $coverImg, $desc] );
   $mainInfoSec.addClass("book-info");
   
-  return [$mainInfoSec, $reviewSec];
+  return [ $mainInfoSec, $reviewSec ];
 }
 
 function generateAlbumHTML(album) {
@@ -362,7 +360,6 @@ function processTasteDiveResponse(response) {
   response.Similar.Results.forEach(elem => APP_STATE.results.push(elem.Name));
   
   if (APP_STATE.resultType === "books") {
-    //renderResultToDOM();
     getBookMetadata(APP_STATE.results[0]);
   } else if (APP_STATE.resultType === "music") {
     getArtistMetadata(APP_STATE.results[0]);
@@ -420,7 +417,6 @@ function addEventListeners() {
 }
 
 function initApp() {
-  
   addEventListeners();
 }
 
