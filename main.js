@@ -247,7 +247,7 @@ function getBookMetadata(bookTitle) {
 }
 
 function processMusicGraphAlbumResponse(response) {
-  APP_STATE.resultMetadata.musicGraph.albumsJ = response.data;
+  APP_STATE.resultMetadata.musicGraph.albums = response.data;
 }
 
 function getArtistAlbums(artistId) {
