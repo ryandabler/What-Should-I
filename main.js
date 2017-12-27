@@ -3,6 +3,7 @@ const GOOGLE_BOOKS_API_ENDPOINT = "https://www.googleapis.com/books/v1/volumes";
 const LIBRIVOX_API_ENDPOINT = "https://librivox.org/api/feed/audiobooks/";
 const IDREAMBOOKS_API_ENDPOINT = "http://idreambooks.com/api/books/reviews.json";
 const MUSICGRAPH_API_ENDPOINT = "http://api.musicgraph.com/api/v2/artist/";
+const SPOTIFY_API_ENDPOINT = "https://api.spotify.com/v1/artists/";
 const APP_STATE = {
                     resultType:     null,
                     results:        [],
@@ -12,7 +13,8 @@ const APP_STATE = {
                                       iDreamBooks: null,
                                       musicGraph:  { artist: null,
                                                      albums: null
-                                                   }
+                                                   },
+                                      spotify:     null
                                     }
                   };
 
@@ -246,8 +248,25 @@ function getBookMetadata(bookTitle) {
   getInformationFromGoogle(bookTitle);
 }
 
+function processSpotifyResponse(response) {
+  console.log(response);
+  APP_STATE.resultMetadata.spotify = response;
+}
+
+function getArtistInformationFromSpotify(spotifyId) {
+  queryAPI( SPOTIFY_API_ENDPOINT + spotifyId,
+           "json",
+            {},
+            processSpotifyResponse,
+            function(xhr, status) {console.log(xhr, status);},
+            { "Authorization": "Bearer " + SPOTIFY_OAUTH }
+          );
+}
+
 function processMusicGraphAlbumResponse(response) {
   APP_STATE.resultMetadata.musicGraph.albums = response.data;
+  
+  getArtistInformationFromSpotify(spotifyId);
 }
 
 function getArtistAlbums(artistId) {
