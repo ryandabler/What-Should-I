@@ -84,7 +84,7 @@ body {
   border-bottom: 1px solid;
 }
 
-.book-authors {
+.book-authors, .genre {
   font-size: 20px;
 }
 
@@ -93,13 +93,13 @@ body {
   display: block;
 }
 
-.book-info, .book-reviews {
+.book-info, .book-reviews, .artist-info, .discography {
   background-color: var(--color-dark);
   padding: 10px;
   border-radius: 10px;
 }
 
-.review-header {
+.review-header, .discography-header {
   font-size: 25px;
   margin: 0 0 10px 0;
 }
