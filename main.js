@@ -4,6 +4,9 @@ const TASTEDIVE_API_ENDPOINT    = "https://tastedive.com/api/similar",
       IDREAMBOOKS_API_ENDPOINT  = "http://idreambooks.com/api/books/reviews.json",
       MUSICGRAPH_API_ENDPOINT   = "http://api.musicgraph.com/api/v2/artist/",
       SPOTIFY_API_ENDPOINT      = "https://api.spotify.com/v1/artists/",
+const THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie";
+const THEMOVIEDB_MOVIE_API_ENDPOINT = "https://api.themoviedb.org/3/movie/";
+const MOVIE_POSTER_URL = "http://image.tmdb.org/t/p/w780/";
       APP_STATE = {
                     resultType:     null,
                     results:        [],
@@ -15,6 +18,7 @@ const TASTEDIVE_API_ENDPOINT    = "https://tastedive.com/api/similar",
                                                      albums: null
                                                    },
                                       spotify:     null
+                                      theMovieDb:  null
                                     }
                   };
 
@@ -206,6 +210,10 @@ function generateMusicResultHTML() {
   return [ $mainInfoSec, $albumsSec ];
 }
 
+function generateMovieResultHTML() {
+  
+}
+
 function renderResultToDOM() {
   let htmlSections;
   
@@ -214,7 +222,7 @@ function renderResultToDOM() {
   } else if (APP_STATE.resultType === "music") {
     htmlSections = generateMusicResultHTML();
   } else if (APP_STATE.resultType === "movie") {
-    
+    htmlSections = generateMovieResultHTML();
   } else {
     
   }
@@ -355,6 +363,44 @@ function getArtistMetadata(artistName) {
   getArtistInformationFromMusicGraph(artistName);
 }
 
+function processMovieInformation(response) {
+  APP_STATE.resultMetadata.theMovieDb = response;
+}
+
+function getMovieInformation(movieId) {
+  query = { api_key: THEMOVIEDB_KEY,
+            append_to_response: "videos,images,reviews"
+          };
+          
+  queryAPI( THEMOVIEDB_MOVIE_API_ENDPOINT + movieId,
+           "json",
+            query,
+            processMovieInformation,
+            function(xhr, status) {console.log(xhr, status);}
+          );
+}
+
+function processTheMovieDbSearchResponse(response) {
+  getMovieInformation(response.results[0].id)
+}
+
+function getInformationFromTheMovieDb(movieTitle) {
+  query = { api_key: THEMOVIEDB_KEY,
+            query:   movieTitle
+          };
+  
+  queryAPI( THEMOVIEDB_SEARCH_API_ENDPOINT,
+           "json",
+            query,
+            processTheMovieDbSearchResponse,
+            function(xhr, status) {console.log(xhr, status);}
+          );
+}
+
+function getMovieMetadata(movieTitle) {
+  getInformationFromTheMovieDb(movieTitle);
+}
+
 function processTasteDiveResponse(response) {
   // Enter the names of the results into application state
   response.Similar.Results.forEach(elem => APP_STATE.results.push(elem.Name));
@@ -364,7 +410,7 @@ function processTasteDiveResponse(response) {
   } else if (APP_STATE.resultType === "music") {
     getArtistMetadata(APP_STATE.results[0]);
   } else if (APP_STATE.resultType === "movie") {
-    
+    getMovieMetadata(APP_STATE.results[0]);
   } else {
     
   }
