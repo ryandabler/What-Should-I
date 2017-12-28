@@ -1,17 +1,23 @@
-const TASTEDIVE_API_ENDPOINT = "https://tastedive.com/api/similar";
-const GOOGLE_BOOKS_API_ENDPOINT = "https://www.googleapis.com/books/v1/volumes";
-const LIBRIVOX_API_ENDPOINT = "https://librivox.org/api/feed/audiobooks/";
-const IDREAMBOOKS_API_ENDPOINT = "http://idreambooks.com/api/books/reviews.json";
-const THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie";
-const THEMOVIEDB_MOVIE_API_ENDPOINT = "https://api.themoviedb.org/3/movie/";
-const MOVIE_POSTER_URL = "http://image.tmdb.org/t/p/w780/";
-const APP_STATE = {
+const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
+      GOOGLE_BOOKS_API_ENDPOINT      = "https://www.googleapis.com/books/v1/volumes",
+      LIBRIVOX_API_ENDPOINT          = "https://librivox.org/api/feed/audiobooks/",
+      IDREAMBOOKS_API_ENDPOINT       = "http://idreambooks.com/api/books/reviews.json",
+      MUSICGRAPH_API_ENDPOINT        = "http://api.musicgraph.com/api/v2/artist/",
+      SPOTIFY_API_ENDPOINT           = "https://api.spotify.com/v1/artists/",
+      THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie",
+      THEMOVIEDB_MOVIE_API_ENDPOINT  = "https://api.themoviedb.org/3/movie/",
+      MOVIE_POSTER_URL               = "http://image.tmdb.org/t/p/w780/",
+      APP_STATE = {
                     resultType:     null,
                     results:        [],
                     sidebarItems:   [],
                     resultMetadata: { google:      null,
                                       librivox:    null,
                                       iDreamBooks: null,
+                                      musicGraph:  { artist: null,
+                                                     albums: null
+                                                   },
+                                      spotify:     null,
                                       theMovieDb:  null
                                     }
                   };
@@ -127,7 +133,7 @@ function generateBookResultHTML() {
       $author = $("<span>"),
       $desc   = $("<p>");
   
-  $author.text(" by " + authors.join(", "));
+  $author.text(` by ${authors.join(", ")}`);
   $author.addClass("book-authors");
   
   $title.text(title);
@@ -137,12 +143,71 @@ function generateBookResultHTML() {
   $desc.text(desc);
   $desc.addClass("book-description");
   
-  $mainInfoSec.append($title)
-              .append($coverImg)
-              .append($desc);
+  $mainInfoSec.append( [$title, $coverImg, $desc] );
   $mainInfoSec.addClass("book-info");
   
-  return [$mainInfoSec, $reviewSec];
+  return [ $mainInfoSec, $reviewSec ];
+}
+
+function generateAlbumHTML(album) {
+  let $album = $("<li>"),
+      $year  = $("<span>");
+  
+  $year.addClass("album-year");
+  $year.text(album.release_year);
+  
+  $album.addClass("album");
+  $album.text(album.title);
+  $album.append($year);
+  
+  return $album;
+}
+
+function generateAlbumsSection($albumsSec) {
+  let albumsHTML = [],
+      $h1        = $("<h1>");
+      $albumList = $("<ul>");
+      
+  APP_STATE.resultMetadata.musicGraph.albums.forEach(album => albumsHTML.push(generateAlbumHTML(album)));
+  
+  $h1.text("Discography");
+  $h1.addClass("discography-header");
+  
+  $albumList.append(albumsHTML);
+  
+  $albumsSec.append($h1, $albumList);
+  $albumsSec.addClass("discography");
+}
+
+function generateMusicResultHTML() {
+  let $mainInfoSec = $("<section>"),
+      $albumsSec   = $("<section>"),
+      $artistImg   = $("<img>");
+  
+  // Set image
+  $artistImg.attr("src", APP_STATE.resultMetadata.spotify.images[0].url);
+  $artistImg.attr("id", "cover-image");
+  
+  // Generate discography
+  generateAlbumsSection($albumsSec);
+  
+  // Create main info section
+  let artist  = APP_STATE.results[0],
+      genre   = APP_STATE.resultMetadata.musicGraph.artist.main_genre;
+      $artist = $("<h1>"),
+      $genre  = $("<span>");
+      
+  $genre.text(`(${genre})`);
+  $genre.addClass("genre");
+  
+  $artist.text(`${artist} `);
+  $artist.append($genre);
+  $artist.addClass("artist");
+  
+  $mainInfoSec.append( [$artist, $artistImg] );
+  $mainInfoSec.addClass("artist-info");
+  
+  return [ $mainInfoSec, $albumsSec ];
 }
 
 function generateMovieResultHTML() {
@@ -154,14 +219,15 @@ function renderResultToDOM() {
   
   if (APP_STATE.resultType === "books") {
     htmlSections = generateBookResultHTML();
-    $("#results").html(htmlSections);
   } else if (APP_STATE.resultType === "music") {
-    
+    htmlSections = generateMusicResultHTML();
   } else if (APP_STATE.resultType === "movie") {
     htmlSections = generateMovieResultHTML();
   } else {
     
   }
+  
+  $("#results").html(htmlSections);
 }
 
 function stripArticleFromTitle(title) {
@@ -178,7 +244,7 @@ function processLibrivoxResponse(response) {
 }
 
 function getInformationFromLibrivox(title) {
-  title = stripArticleFromTitle(title);
+  let title = stripArticleFromTitle(title);
   const query = { title:     title,
                   format:   "jsonp",
                   callback: "processLibrivoxResponse"
@@ -194,7 +260,6 @@ function getInformationFromLibrivox(title) {
 
 function processIDreamBooksResponse(response) {
   APP_STATE.resultMetadata.iDreamBooks = response.book;
-  console.log(response);
   
   renderResultToDOM();
 }
@@ -226,11 +291,11 @@ function getInformationFromGoogle(bookTitle) {
                 fields:    "items(volumeInfo/title,volumeInfo/authors,volumeInfo/previewLink,volumeInfo/imageLinks,volumeInfo/description,volumeInfo/industryIdentifiers)"
               };
   
-  queryAPI(GOOGLE_BOOKS_API_ENDPOINT,
+  queryAPI( GOOGLE_BOOKS_API_ENDPOINT,
            "json",
-           query,
-           processGoogleResponse,
-           function(xhr, status) {console.log(xhr, status);}
+            query,
+            processGoogleResponse,
+            function(xhr, status) {console.log(xhr, status);}
           );
 }
 
@@ -238,14 +303,73 @@ function getBookMetadata(bookTitle) {
   getInformationFromGoogle(bookTitle);
 }
 
+function processSpotifyResponse(response) {
+  APP_STATE.resultMetadata.spotify = response;
+  
+  renderResultToDOM();
+}
+
+function getArtistInformationFromSpotify(spotifyId) {
+  queryAPI( SPOTIFY_API_ENDPOINT + spotifyId,
+           "json",
+            {},
+            processSpotifyResponse,
+            function(xhr, status) {console.log(xhr, status);},
+            { "Authorization": "Bearer " + SPOTIFY_OAUTH }
+          );
+}
+
+function processMusicGraphAlbumResponse(response) {
+  APP_STATE.resultMetadata.musicGraph.albums = response.data;
+  
+  getArtistInformationFromSpotify(APP_STATE.resultMetadata.musicGraph.artist.spotify_id);
+}
+
+function getArtistAlbums(artistId) {
+  let query = { api_key: MUSICGRAPH_KEY,
+                id:      artistId
+              };
+          
+  queryAPI( MUSICGRAPH_API_ENDPOINT + artistId + "/albums",
+           "json",
+            query,
+            processMusicGraphAlbumResponse,
+            function(xhr, status) {console.log(xhr, status);}
+          );
+}
+
+function processMusicGraphArtistResponse(response) {
+  APP_STATE.resultMetadata.musicGraph.artist = response.data[0];
+  
+  getArtistAlbums(APP_STATE.resultMetadata.musicGraph.artist.id);
+}
+
+function getArtistInformationFromMusicGraph(artistName) {
+  let query = { api_key: MUSICGRAPH_KEY,
+                name:    artistName,
+                limit:   1
+              };
+          
+  queryAPI( MUSICGRAPH_API_ENDPOINT + "search",
+           "json",
+            query,
+            processMusicGraphArtistResponse,
+            function(xhr, status) {console.log(xhr, status);}
+           );
+}
+
+function getArtistMetadata(artistName) {
+  getArtistInformationFromMusicGraph(artistName);
+}
+
 function processMovieInformation(response) {
   APP_STATE.resultMetadata.theMovieDb = response;
 }
 
 function getMovieInformation(movieId) {
-  query = { api_key: THEMOVIEDB_KEY,
-            append_to_response: "videos,images,reviews"
-          };
+  let query = { api_key: THEMOVIEDB_KEY,
+                append_to_response: "videos,images,reviews"
+              };
           
   queryAPI( THEMOVIEDB_MOVIE_API_ENDPOINT + movieId,
            "json",
@@ -260,9 +384,9 @@ function processTheMovieDbSearchResponse(response) {
 }
 
 function getInformationFromTheMovieDb(movieTitle) {
-  query = { api_key: THEMOVIEDB_KEY,
-            query:   movieTitle
-          };
+  let query = { api_key: THEMOVIEDB_KEY,
+                query:   movieTitle
+              };
   
   queryAPI( THEMOVIEDB_SEARCH_API_ENDPOINT,
            "json",
@@ -281,10 +405,9 @@ function processTasteDiveResponse(response) {
   response.Similar.Results.forEach(elem => APP_STATE.results.push(elem.Name));
   
   if (APP_STATE.resultType === "books") {
-    //renderResultToDOM();
     getBookMetadata(APP_STATE.results[0]);
   } else if (APP_STATE.resultType === "music") {
-    
+    getArtistMetadata(APP_STATE.results[0]);
   } else if (APP_STATE.resultType === "movie") {
     getMovieMetadata(APP_STATE.results[0]);
   } else {
@@ -292,14 +415,19 @@ function processTasteDiveResponse(response) {
   }
 }
 
-function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallback) {
-  $.ajax({url:       endpointURL,
-          dataType:  dataType,
-          method:   "GET",
-          data:      queryObj,
-          success:   successCallback,
-          error:     errorCallback
-        });
+function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallback, header = null) {
+  let ajaxRequestObject = {url:       endpointURL,
+                           dataType:  dataType,
+                           method:   "GET",
+                           data:      queryObj,
+                           success:   successCallback,
+                           error:     errorCallback
+                          };
+  if (header !== null) {
+    ajaxRequestObject.headers = header;
+  }
+  
+  $.ajax(ajaxRequestObject);
 }
 
 function getRecommendationFromTasteDive() {
@@ -334,7 +462,6 @@ function addEventListeners() {
 }
 
 function initApp() {
-  
   addEventListeners();
 }
 
