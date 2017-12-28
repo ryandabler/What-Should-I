@@ -4,6 +4,7 @@ const LIBRIVOX_API_ENDPOINT = "https://librivox.org/api/feed/audiobooks/";
 const IDREAMBOOKS_API_ENDPOINT = "http://idreambooks.com/api/books/reviews.json";
 const THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie";
 const THEMOVIEDB_MOVIE_API_ENDPOINT = "https://api.themoviedb.org/3/movie/";
+const MOVIE_POSTER_URL = "http://image.tmdb.org/t/p/w780/";
 const APP_STATE = {
                     resultType:     null,
                     results:        [],
@@ -144,6 +145,10 @@ function generateBookResultHTML() {
   return [$mainInfoSec, $reviewSec];
 }
 
+function generateMovieResultHTML() {
+  
+}
+
 function renderResultToDOM() {
   let htmlSections;
   
@@ -153,7 +158,7 @@ function renderResultToDOM() {
   } else if (APP_STATE.resultType === "music") {
     
   } else if (APP_STATE.resultType === "movie") {
-    
+    htmlSections = generateMovieResultHTML();
   } else {
     
   }
