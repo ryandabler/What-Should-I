@@ -6,7 +6,7 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
       SPOTIFY_API_ENDPOINT           = "https://api.spotify.com/v1/artists/",
       THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie",
       THEMOVIEDB_MOVIE_API_ENDPOINT  = "https://api.themoviedb.org/3/movie/",
-      MOVIE_POSTER_URL               = "http://image.tmdb.org/t/p/w780/",
+      MOVIE_POSTER_URL               = "http://image.tmdb.org/t/p/w780",
       APP_STATE = {
                     resultType:     null,
                     results:        [],
@@ -210,8 +210,132 @@ function generateMusicResultHTML() {
   return [ $mainInfoSec, $albumsSec ];
 }
 
-function generateMovieResultHTML() {
+function extractMovieInfo(movieInfoPath) {
+  let movieInfo = {},
+      cast      = movieInfoPath.credits.cast.filter( (elem, idx) => idx < 4),
+      credits   = movieInfoPath.credits.crew.filter(elem => elem.job.search(/^Director$|^Screenplay$|^Producer$/i) > -1);
   
+  // Get only the first four cast members
+  movieInfo.cast = [];
+  cast.forEach(castMember => movieInfo.cast.push(castMember.name));
+  
+  // Add crew information to movieInfo
+  // The crew object will have as values for each key an array of names matching the given job
+  for (let n = 0; n < credits.length; n++) {
+    let crewMember = credits[n];
+    if (movieInfo.hasOwnProperty(crewMember.job)) {
+      movieInfo[crewMember.job].push(crewMember.name);
+    } else {
+      movieInfo[crewMember.job] = [crewMember.name];
+    }
+  }
+  
+  // Add synopsis
+  movieInfo.synopsis = [ movieInfoPath.overview ];
+  
+  // Add genre info
+  movieInfo.genres   = [];
+  movieInfoPath.genres.forEach(elem => movieInfo.genres.push(elem.name));
+  
+  // Add release date
+  movieInfo.released = [ new Date(movieInfoPath.release_date) ];
+  
+  return movieInfo;
+}
+
+function processMovieReview(review) {
+  let $review  = $("<article>"),
+      $author  = $("<h1>"),
+      $content = $("<p>");
+  
+  $author.html(`<a href=${review.url}>${review.author}</a>`);
+  $content.text(review.content);
+  $review.append( [$author, $content] );
+  console.log($review);
+  return $review;
+}
+
+function extractMovieReviews(movieInfoPath) {
+  let reviews          = movieInfoPath.reviews.results,
+      processedReviews = [];
+      
+  reviews.forEach(review => processedReviews.push(processMovieReview(review)));
+  console.log(processedReviews);
+  return processedReviews;
+}
+
+function generateSplashPage(resultType, imgPath, imgAltText) {
+  let $splashSec   = $("<section>"),
+      $feedbackTxt = $("<h1>"),
+      $img         = $("<img>");
+  
+  $feedbackTxt.text(`You should ${resultType}`);
+  $feedbackTxt.addClass("feedback-text");
+  
+  $img.attr("src", imgPath);
+  $img.attr("id", "splash-image");
+  $img.attr("alt", imgAltText);
+  
+  $splashSec.append( [ $feedbackTxt, $img ] );
+  return $splashSec;
+}
+
+function generateMovieResultHTML() {
+  let $splashSec,
+      $mainInfoSec  = $("<section>"),
+      $infoDiv      = $("<div>"),
+      $trailerDiv   = $("<div>"),
+      $reviewsDiv   = $("<div>"),
+      $moreDiv      = $("<div>"),
+      menu          = [],
+      movieInfoPath = APP_STATE.resultMetadata.theMovieDb,
+      movieName     = APP_STATE.results[0];
+  
+  // Create splash page
+  let posterPath   = MOVIE_POSTER_URL + movieInfoPath.poster_path;
+  $splashSec = generateSplashPage("watch", posterPath, movieName);
+  
+  // Gather important data about movie and assemble into $infoDiv
+  let movieInfo = extractMovieInfo(movieInfoPath);
+  
+  for (info in movieInfo) {
+    if (movieInfo.hasOwnProperty(info)) {
+      let movieHTML = `<p><b>${info}</b>: ${movieInfo[info].join()}</p>`;
+      $infoDiv.append(movieHTML);
+    }
+  }
+  
+  // Push $infoDiv to the navigational menu to be generated
+  $infoDiv.menuName = "Info";
+  $infoDiv.attr("id", "movie-info");
+  menu.push($infoDiv);
+  
+  // Create trailer div
+  let trailers = movieInfoPath.videos.results.filter(elem => elem.name.search(/trailer/i) > -1);
+  if (trailers.length > 0) {
+    let youtubeId = trailers[0].key;
+    $trailerDiv.html(`<iframe id="ytplayer" type="text/html" width="640" height="360" src="https://www.youtube.com/embed/${youtubeId}?rel=0&showinfo=0" frameborder="0"></iframe>`);
+    
+    // Push trailer to the navigational menu
+    $trailerDiv.menuName = "Trailer";
+    $trailerDiv.attr("id", "movie-trailer");
+    menu.push($trailerDiv);
+  }
+  
+  // Create review div
+  let reviews = extractMovieReviews(movieInfoPath);
+  if (reviews.length > 0) {
+    $reviewsDiv.append(reviews);
+    
+    // Push reviews to the navigational menu
+    $reviewsDiv.menuName = "Reviews";
+    $reviewsDiv.attr("id", "movie-reviews");
+    menu.push($reviewsDiv);
+  }
+  
+  // Assemble elements
+  $mainInfoSec.append( menu );
+  return [ $splashSec, $mainInfoSec ];
 }
 
 function renderResultToDOM() {
@@ -364,11 +488,13 @@ function getArtistMetadata(artistName) {
 
 function processMovieInformation(response) {
   APP_STATE.resultMetadata.theMovieDb = response;
+  
+  renderResultToDOM();
 }
 
 function getMovieInformation(movieId) {
   let query = { api_key: THEMOVIEDB_KEY,
-                append_to_response: "videos,images,reviews"
+                append_to_response: "videos,images,reviews,credits"
               };
           
   queryAPI( THEMOVIEDB_MOVIE_API_ENDPOINT + movieId,
