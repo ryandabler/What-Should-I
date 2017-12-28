@@ -1,12 +1,12 @@
-const TASTEDIVE_API_ENDPOINT    = "https://tastedive.com/api/similar",
-      GOOGLE_BOOKS_API_ENDPOINT = "https://www.googleapis.com/books/v1/volumes",
-      LIBRIVOX_API_ENDPOINT     = "https://librivox.org/api/feed/audiobooks/",
-      IDREAMBOOKS_API_ENDPOINT  = "http://idreambooks.com/api/books/reviews.json",
-      MUSICGRAPH_API_ENDPOINT   = "http://api.musicgraph.com/api/v2/artist/",
-      SPOTIFY_API_ENDPOINT      = "https://api.spotify.com/v1/artists/",
-const THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie";
-const THEMOVIEDB_MOVIE_API_ENDPOINT = "https://api.themoviedb.org/3/movie/";
-const MOVIE_POSTER_URL = "http://image.tmdb.org/t/p/w780/";
+const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
+      GOOGLE_BOOKS_API_ENDPOINT      = "https://www.googleapis.com/books/v1/volumes",
+      LIBRIVOX_API_ENDPOINT          = "https://librivox.org/api/feed/audiobooks/",
+      IDREAMBOOKS_API_ENDPOINT       = "http://idreambooks.com/api/books/reviews.json",
+      MUSICGRAPH_API_ENDPOINT        = "http://api.musicgraph.com/api/v2/artist/",
+      SPOTIFY_API_ENDPOINT           = "https://api.spotify.com/v1/artists/",
+      THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie",
+      THEMOVIEDB_MOVIE_API_ENDPOINT  = "https://api.themoviedb.org/3/movie/",
+      MOVIE_POSTER_URL               = "http://image.tmdb.org/t/p/w780/",
       APP_STATE = {
                     resultType:     null,
                     results:        [],
@@ -17,7 +17,7 @@ const MOVIE_POSTER_URL = "http://image.tmdb.org/t/p/w780/";
                                       musicGraph:  { artist: null,
                                                      albums: null
                                                    },
-                                      spotify:     null
+                                      spotify:     null,
                                       theMovieDb:  null
                                     }
                   };
@@ -244,7 +244,7 @@ function processLibrivoxResponse(response) {
 }
 
 function getInformationFromLibrivox(title) {
-  title = stripArticleFromTitle(title);
+  let title = stripArticleFromTitle(title);
   const query = { title:     title,
                   format:   "jsonp",
                   callback: "processLibrivoxResponse"
@@ -260,7 +260,6 @@ function getInformationFromLibrivox(title) {
 
 function processIDreamBooksResponse(response) {
   APP_STATE.resultMetadata.iDreamBooks = response.book;
-  console.log(response);
   
   renderResultToDOM();
 }
@@ -292,11 +291,11 @@ function getInformationFromGoogle(bookTitle) {
                 fields:    "items(volumeInfo/title,volumeInfo/authors,volumeInfo/previewLink,volumeInfo/imageLinks,volumeInfo/description,volumeInfo/industryIdentifiers)"
               };
   
-  queryAPI(GOOGLE_BOOKS_API_ENDPOINT,
+  queryAPI( GOOGLE_BOOKS_API_ENDPOINT,
            "json",
-           query,
-           processGoogleResponse,
-           function(xhr, status) {console.log(xhr, status);}
+            query,
+            processGoogleResponse,
+            function(xhr, status) {console.log(xhr, status);}
           );
 }
 
@@ -327,9 +326,9 @@ function processMusicGraphAlbumResponse(response) {
 }
 
 function getArtistAlbums(artistId) {
-  query = { api_key: MUSICGRAPH_KEY,
-            id:      artistId
-          };
+  let query = { api_key: MUSICGRAPH_KEY,
+                id:      artistId
+              };
           
   queryAPI( MUSICGRAPH_API_ENDPOINT + artistId + "/albums",
            "json",
@@ -346,10 +345,10 @@ function processMusicGraphArtistResponse(response) {
 }
 
 function getArtistInformationFromMusicGraph(artistName) {
-  query = { api_key: MUSICGRAPH_KEY,
-            name:    artistName,
-            limit:   1
-          };
+  let query = { api_key: MUSICGRAPH_KEY,
+                name:    artistName,
+                limit:   1
+              };
           
   queryAPI( MUSICGRAPH_API_ENDPOINT + "search",
            "json",
@@ -368,9 +367,9 @@ function processMovieInformation(response) {
 }
 
 function getMovieInformation(movieId) {
-  query = { api_key: THEMOVIEDB_KEY,
-            append_to_response: "videos,images,reviews"
-          };
+  let query = { api_key: THEMOVIEDB_KEY,
+                append_to_response: "videos,images,reviews"
+              };
           
   queryAPI( THEMOVIEDB_MOVIE_API_ENDPOINT + movieId,
            "json",
@@ -385,9 +384,9 @@ function processTheMovieDbSearchResponse(response) {
 }
 
 function getInformationFromTheMovieDb(movieTitle) {
-  query = { api_key: THEMOVIEDB_KEY,
-            query:   movieTitle
-          };
+  let query = { api_key: THEMOVIEDB_KEY,
+                query:   movieTitle
+              };
   
   queryAPI( THEMOVIEDB_SEARCH_API_ENDPOINT,
            "json",
