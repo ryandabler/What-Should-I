@@ -2,13 +2,16 @@ const TASTEDIVE_API_ENDPOINT = "https://tastedive.com/api/similar";
 const GOOGLE_BOOKS_API_ENDPOINT = "https://www.googleapis.com/books/v1/volumes";
 const LIBRIVOX_API_ENDPOINT = "https://librivox.org/api/feed/audiobooks/";
 const IDREAMBOOKS_API_ENDPOINT = "http://idreambooks.com/api/books/reviews.json";
+const THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie";
+const THEMOVIEDB_MOVIE_API_ENDPOINT = "https://api.themoviedb.org/3/movie/";
 const APP_STATE = {
                     resultType:     null,
                     results:        [],
                     sidebarItems:   [],
                     resultMetadata: { google:      null,
                                       librivox:    null,
-                                      iDreamBooks: null
+                                      iDreamBooks: null,
+                                      theMovieDb:  null
                                     }
                   };
 
@@ -230,6 +233,44 @@ function getBookMetadata(bookTitle) {
   getInformationFromGoogle(bookTitle);
 }
 
+function processMovieInformation(response) {
+  APP_STATE.resultMetadata.theMovieDb = response;
+}
+
+function getMovieInformation(movieId) {
+  query = { api_key: THEMOVIEDB_KEY,
+            append_to_response: "videos,images,reviews"
+          };
+          
+  queryAPI( THEMOVIEDB_MOVIE_API_ENDPOINT + movieId,
+           "json",
+            query,
+            processMovieInformation,
+            function(xhr, status) {console.log(xhr, status);}
+          );
+}
+
+function processTheMovieDbSearchResponse(response) {
+  getMovieInformation(response.results[0].id)
+}
+
+function getInformationFromTheMovieDb(movieTitle) {
+  query = { api_key: THEMOVIEDB_KEY,
+            query:   movieTitle
+          };
+  
+  queryAPI( THEMOVIEDB_SEARCH_API_ENDPOINT,
+           "json",
+            query,
+            processTheMovieDbSearchResponse,
+            function(xhr, status) {console.log(xhr, status);}
+          );
+}
+
+function getMovieMetadata(movieTitle) {
+  getInformationFromTheMovieDb(movieTitle);
+}
+
 function processTasteDiveResponse(response) {
   // Enter the names of the results into application state
   response.Similar.Results.forEach(elem => APP_STATE.results.push(elem.Name));
@@ -240,7 +281,7 @@ function processTasteDiveResponse(response) {
   } else if (APP_STATE.resultType === "music") {
     
   } else if (APP_STATE.resultType === "movie") {
-    
+    getMovieMetadata(APP_STATE.results[0]);
   } else {
     
   }
