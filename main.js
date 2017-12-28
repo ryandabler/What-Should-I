@@ -1,16 +1,20 @@
-const TASTEDIVE_API_ENDPOINT = "https://tastedive.com/api/similar";
-const GOOGLE_BOOKS_API_ENDPOINT = "https://www.googleapis.com/books/v1/volumes";
-const GOODREADS_API_ENDPOINT = ["https://www.goodreads.com/book/isbn/", "?format=json&key="];
-const LIBRIVOX_API_ENDPOINT = "https://librivox.org/api/feed/audiobooks/";
-const IDREAMBOOKS_API_ENDPOINT = "http://idreambooks.com/api/books/reviews.json";
-const APP_STATE = {
+const TASTEDIVE_API_ENDPOINT    = "https://tastedive.com/api/similar",
+      GOOGLE_BOOKS_API_ENDPOINT = "https://www.googleapis.com/books/v1/volumes",
+      LIBRIVOX_API_ENDPOINT     = "https://librivox.org/api/feed/audiobooks/",
+      IDREAMBOOKS_API_ENDPOINT  = "http://idreambooks.com/api/books/reviews.json",
+      MUSICGRAPH_API_ENDPOINT   = "http://api.musicgraph.com/api/v2/artist/",
+      SPOTIFY_API_ENDPOINT      = "https://api.spotify.com/v1/artists/",
+      APP_STATE = {
                     resultType:     null,
                     results:        [],
                     sidebarItems:   [],
                     resultMetadata: { google:      null,
-                                      //goodreads: null,
                                       librivox:    null,
-                                      iDreamBooks: null
+                                      iDreamBooks: null,
+                                      musicGraph:  { artist: null,
+                                                     albums: null
+                                                   },
+                                      spotify:     null
                                     }
                   };
 
@@ -125,7 +129,7 @@ function generateBookResultHTML() {
       $author = $("<span>"),
       $desc   = $("<p>");
   
-  $author.text(" by " + authors.join(", "));
+  $author.text(` by ${authors.join(", ")}`);
   $author.addClass("book-authors");
   
   $title.text(title);
@@ -135,12 +139,71 @@ function generateBookResultHTML() {
   $desc.text(desc);
   $desc.addClass("book-description");
   
-  $mainInfoSec.append($title)
-              .append($coverImg)
-              .append($desc);
+  $mainInfoSec.append( [$title, $coverImg, $desc] );
   $mainInfoSec.addClass("book-info");
   
-  return [$mainInfoSec, $reviewSec];
+  return [ $mainInfoSec, $reviewSec ];
+}
+
+function generateAlbumHTML(album) {
+  let $album = $("<li>"),
+      $year  = $("<span>");
+  
+  $year.addClass("album-year");
+  $year.text(album.release_year);
+  
+  $album.addClass("album");
+  $album.text(album.title);
+  $album.append($year);
+  
+  return $album;
+}
+
+function generateAlbumsSection($albumsSec) {
+  let albumsHTML = [],
+      $h1        = $("<h1>");
+      $albumList = $("<ul>");
+      
+  APP_STATE.resultMetadata.musicGraph.albums.forEach(album => albumsHTML.push(generateAlbumHTML(album)));
+  
+  $h1.text("Discography");
+  $h1.addClass("discography-header");
+  
+  $albumList.append(albumsHTML);
+  
+  $albumsSec.append($h1, $albumList);
+  $albumsSec.addClass("discography");
+}
+
+function generateMusicResultHTML() {
+  let $mainInfoSec = $("<section>"),
+      $albumsSec   = $("<section>"),
+      $artistImg   = $("<img>");
+  
+  // Set image
+  $artistImg.attr("src", APP_STATE.resultMetadata.spotify.images[0].url);
+  $artistImg.attr("id", "cover-image");
+  
+  // Generate discography
+  generateAlbumsSection($albumsSec);
+  
+  // Create main info section
+  let artist  = APP_STATE.results[0],
+      genre   = APP_STATE.resultMetadata.musicGraph.artist.main_genre;
+      $artist = $("<h1>"),
+      $genre  = $("<span>");
+      
+  $genre.text(`(${genre})`);
+  $genre.addClass("genre");
+  
+  $artist.text(`${artist} `);
+  $artist.append($genre);
+  $artist.addClass("artist");
+  
+  $mainInfoSec.append( [$artist, $artistImg] );
+  $mainInfoSec.addClass("artist-info");
+  
+  return [ $mainInfoSec, $albumsSec ];
 }
 
 function renderResultToDOM() {
@@ -148,14 +211,15 @@ function renderResultToDOM() {
   
   if (APP_STATE.resultType === "books") {
     htmlSections = generateBookResultHTML();
-    $("#results").html(htmlSections);
   } else if (APP_STATE.resultType === "music") {
-    
+    htmlSections = generateMusicResultHTML();
   } else if (APP_STATE.resultType === "movie") {
     
   } else {
     
   }
+  
+  $("#results").html(htmlSections);
 }
 
 function stripArticleFromTitle(title) {
@@ -186,22 +250,6 @@ function getInformationFromLibrivox(title) {
           );
 }
 
-// function createGoodReadsReviewIframe(response) {
-//   APP_STATE.resultMetadata.goodreads = response;
-//   $("#results").append(response.reviews_widget);
-// }
-
-// function getInformationFromGoodReads(isbn) {
-//   let url = `${GOODREADS_API_ENDPOINT[0]}${isbn}${GOODREADS_API_ENDPOINT[1]}${GOODREADS_KEY}`;
-  
-//   queryAPI( url,
-//           "jsonp",
-//             {},
-//             createGoodReadsReviewIframe,
-//             function(xhr, status) {console.log("error",xhr, status);}
-//           );
-// }
-
 function processIDreamBooksResponse(response) {
   APP_STATE.resultMetadata.iDreamBooks = response.book;
   console.log(response);
@@ -226,7 +274,6 @@ function processGoogleResponse(response) {
   APP_STATE.resultMetadata.google = response.items[0].volumeInfo;
   
   let isbn = APP_STATE.resultMetadata.google.industryIdentifiers[0].identifier;
-  //getInformationFromGoodReads(isbn);
   getInformationFromIDreamBooks(isbn);
 }
 
@@ -249,15 +296,73 @@ function getBookMetadata(bookTitle) {
   getInformationFromGoogle(bookTitle);
 }
 
+function processSpotifyResponse(response) {
+  APP_STATE.resultMetadata.spotify = response;
+  
+  renderResultToDOM();
+}
+
+function getArtistInformationFromSpotify(spotifyId) {
+  queryAPI( SPOTIFY_API_ENDPOINT + spotifyId,
+           "json",
+            {},
+            processSpotifyResponse,
+            function(xhr, status) {console.log(xhr, status);},
+            { "Authorization": "Bearer " + SPOTIFY_OAUTH }
+          );
+}
+
+function processMusicGraphAlbumResponse(response) {
+  APP_STATE.resultMetadata.musicGraph.albums = response.data;
+  
+  getArtistInformationFromSpotify(APP_STATE.resultMetadata.musicGraph.artist.spotify_id);
+}
+
+function getArtistAlbums(artistId) {
+  query = { api_key: MUSICGRAPH_KEY,
+            id:      artistId
+          };
+          
+  queryAPI( MUSICGRAPH_API_ENDPOINT + artistId + "/albums",
+           "json",
+            query,
+            processMusicGraphAlbumResponse,
+            function(xhr, status) {console.log(xhr, status);}
+          );
+}
+
+function processMusicGraphArtistResponse(response) {
+  APP_STATE.resultMetadata.musicGraph.artist = response.data[0];
+  
+  getArtistAlbums(APP_STATE.resultMetadata.musicGraph.artist.id);
+}
+
+function getArtistInformationFromMusicGraph(artistName) {
+  query = { api_key: MUSICGRAPH_KEY,
+            name:    artistName,
+            limit:   1
+          };
+          
+  queryAPI( MUSICGRAPH_API_ENDPOINT + "search",
+           "json",
+            query,
+            processMusicGraphArtistResponse,
+            function(xhr, status) {console.log(xhr, status);}
+           );
+}
+
+function getArtistMetadata(artistName) {
+  getArtistInformationFromMusicGraph(artistName);
+}
+
 function processTasteDiveResponse(response) {
   // Enter the names of the results into application state
   response.Similar.Results.forEach(elem => APP_STATE.results.push(elem.Name));
   
   if (APP_STATE.resultType === "books") {
-    //renderResultToDOM();
     getBookMetadata(APP_STATE.results[0]);
   } else if (APP_STATE.resultType === "music") {
-    
+    getArtistMetadata(APP_STATE.results[0]);
   } else if (APP_STATE.resultType === "movie") {
     
   } else {
@@ -265,14 +370,19 @@ function processTasteDiveResponse(response) {
   }
 }
 
-function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallback) {
-  $.ajax({url:       endpointURL,
-          dataType:  dataType,
-          method:   "GET",
-          data:      queryObj,
-          success:   successCallback,
-          error:     errorCallback
-        });
+function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallback, header = null) {
+  let ajaxRequestObject = {url:       endpointURL,
+                           dataType:  dataType,
+                           method:   "GET",
+                           data:      queryObj,
+                           success:   successCallback,
+                           error:     errorCallback
+                          };
+  if (header !== null) {
+    ajaxRequestObject.headers = header;
+  }
+  
+  $.ajax(ajaxRequestObject);
 }
 
 function getRecommendationFromTasteDive() {
@@ -307,7 +417,6 @@ function addEventListeners() {
 }
 
 function initApp() {
-  
   addEventListeners();
 }
 
