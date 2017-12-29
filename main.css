@@ -22,11 +22,14 @@ body {
   display: flex;
   height: 100vh;
   align-items: center;
-  font-size: 50px;
 }
 
 .splash-content {
   margin: auto;
+}
+
+.large-text {
+  font-size: 50px;
 }
 
 .responsive {
@@ -64,52 +67,47 @@ body {
 }
 
 #results {
-  width: 80%;
-  margin: 10px auto;
-}
-
-#results p {
-  margin: 0;
-}
-
-#results section:not(:last-child) {
-  margin-bottom: 10px;
-}
-
-.book-title, .artist {
-  font-size: 30px;
-  color: var(--color-pop);
-  margin-top: 0;
-  margin-bottom: 16px;
-  border-bottom: 1px solid;
-}
-
-.book-authors, .genre {
-  font-size: 20px;
-}
-
-#cover-image {
+  width: 70vw;
   margin: auto;
-  display: block;
 }
 
-.book-info, .book-reviews, .artist-info, .discography {
-  background-color: var(--color-dark);
+.wrapper-sec:not(:last-child) {
+  padding-right: 10px;
+}
+
+#banner-img {
+  height: 70vh;
+}
+
+#content-wrapper {
+  width: 39vw;
+  vertical-align: top;
+}
+
+.wrapper-sec {
+  display: inline-block;
+}
+
+#results-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  height: 40px;
+}
+
+.menu-item {
+  display: inline-block;
   padding: 10px;
-  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
 }
 
-.review-header, .discography-header {
-  font-size: 25px;
-  margin: 0 0 10px 0;
+.menu-item:hover {
+  border-bottom: 1px solid var(--color-pop);
 }
 
-.book-review:not(:last-child) {
-  margin-bottom: 10px;
-}
-
-.book-review a {
-  color: var(--color-link);
+.menu-item.active {
+  border-bottom: 2px solid var(--color-pop);
 }
 
 @media only screen and (min-width: 640px) {
