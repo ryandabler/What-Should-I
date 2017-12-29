@@ -251,7 +251,7 @@ function processMovieReview(review) {
   $author.html(`<a href=${review.url}>${review.author}</a>`);
   $content.text(review.content);
   $review.append( [$author, $content] );
-  console.log($review);
+  
   return $review;
 }
 
@@ -260,7 +260,7 @@ function extractMovieReviews(movieInfoPath) {
       processedReviews = [];
       
   reviews.forEach(review => processedReviews.push(processMovieReview(review)));
-  console.log(processedReviews);
+  
   return processedReviews;
 }
 
