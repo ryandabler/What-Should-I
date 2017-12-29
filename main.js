@@ -277,6 +277,8 @@ function generateSplashPage(resultType, imgPath, imgAltText) {
   $img.attr("alt", imgAltText);
   
   $splashSec.append( [ $feedbackTxt, $img ] );
+  $splashSec.attr("id", "result-splash");
+  
   return $splashSec;
 }
 
