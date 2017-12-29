@@ -264,53 +264,53 @@ function extractMovieReviews(movieInfoPath) {
   return processedReviews;
 }
 
-function generateSplashPage(resultType, imgPath, imgAltText) {
-  let $splashSec   = $("<section>"),
-      $feedbackTxt = $("<h1>"),
-      $img         = $("<img>");
+function generateMenu(menuItemsArr) {
+  let liItems = [],
+      $li;
+      
+  for (let n = 0; n < menuItemsArr.length; n++) {
+    $li = $("<li>");
+    $li.text(menuItemsArr[n]);
+    $li.addClass("menu-item");
+    
+    liItems.push($li);
+  }
   
-  $feedbackTxt.text(`You should ${resultType}`);
-  $feedbackTxt.addClass("feedback-text");
-  
-  $img.attr("src", imgPath);
-  $img.attr("id", "splash-image");
-  $img.attr("alt", imgAltText);
-  
-  $splashSec.append( [ $feedbackTxt, $img ] );
-  $splashSec.attr("id", "result-splash");
-  
-  return $splashSec;
+  return liItems;
 }
 
 function generateMovieResultHTML() {
-  let $splashSec,
-      $mainInfoSec  = $("<section>"),
+  let returnObj     = { bannerImg:      {},
+                        contentWrapper: {},
+                        resultsMenu:    []
+                      },
       $infoDiv      = $("<div>"),
       $trailerDiv   = $("<div>"),
       $reviewsDiv   = $("<div>"),
       $moreDiv      = $("<div>"),
-      menu          = [],
+      menu          = [], // Will be used to generate <li> navigational elements
       movieInfoPath = APP_STATE.resultMetadata.theMovieDb,
       movieName     = APP_STATE.results[0];
   
-  // Create splash page
-  let posterPath   = MOVIE_POSTER_URL + movieInfoPath.poster_path;
-  $splashSec = generateSplashPage("watch", posterPath, movieName);
+  // Set $image values
+  returnObj.bannerImg.src = MOVIE_POSTER_URL + movieInfoPath.poster_path;
+  returnObj.bannerImg.alt = `Poster for ${movieName}`;
   
   // Gather important data about movie and assemble into $infoDiv
+  returnObj.contentWrapper.divs = [];
+  
   let movieInfo = extractMovieInfo(movieInfoPath);
   
   for (info in movieInfo) {
     if (movieInfo.hasOwnProperty(info)) {
-      let movieHTML = `<p><b>${info}</b>: ${movieInfo[info].join()}</p>`;
+      let movieHTML = `<p><b>${info}</b>: ${movieInfo[info].join(", ")}</p>`;
       $infoDiv.append(movieHTML);
     }
   }
   
-  // Push $infoDiv to the navigational menu to be generated
-  $infoDiv.menuName = "Info";
   $infoDiv.attr("id", "movie-info");
-  menu.push($infoDiv);
+  returnObj.contentWrapper.divs.push($infoDiv);
+  menu.push("info");
   
   // Create trailer div
   let trailers = movieInfoPath.videos.results.filter(elem => elem.name.search(/trailer/i) > -1);
@@ -319,9 +319,10 @@ function generateMovieResultHTML() {
     $trailerDiv.html(`<iframe id="ytplayer" type="text/html" width="640" height="360" src="https://www.youtube.com/embed/${youtubeId}?rel=0&showinfo=0" frameborder="0"></iframe>`);
     
     // Push trailer to the navigational menu
-    $trailerDiv.menuName = "Trailer";
     $trailerDiv.attr("id", "movie-trailer");
-    menu.push($trailerDiv);
+    $trailerDiv.addClass("hidden");
+    returnObj.contentWrapper.divs.push($trailerDiv);
+    menu.push("trailer");
   }
   
   // Create review div
@@ -330,30 +331,45 @@ function generateMovieResultHTML() {
     $reviewsDiv.append(reviews);
     
     // Push reviews to the navigational menu
-    $reviewsDiv.menuName = "Reviews";
     $reviewsDiv.attr("id", "movie-reviews");
-    menu.push($reviewsDiv);
+    $reviewsDiv.addClass("hidden");
+    returnObj.contentWrapper.divs.push($reviewsDiv);
+    menu.push("reviews");
   }
   
-  // Assemble elements
-  $mainInfoSec.append( menu );
-  return [ $splashSec, $mainInfoSec ];
+  // Generate menu elements
+  returnObj.resultsMenu = generateMenu(menu);
+  
+  return returnObj;
 }
 
 function renderResultToDOM() {
   let htmlSections;
-  
+  let htmlObject;
   if (APP_STATE.resultType === "books") {
     htmlSections = generateBookResultHTML();
   } else if (APP_STATE.resultType === "music") {
     htmlSections = generateMusicResultHTML();
   } else if (APP_STATE.resultType === "movie") {
-    htmlSections = generateMovieResultHTML();
+    htmlObject = generateMovieResultHTML();
   } else {
     
   }
   
-  $("#results").html(htmlSections);
+  if (htmlSections) {
+    $("#results").html(htmlSections);
+  } else {
+    let $banner = $("#banner-img");
+    $banner.attr("src", htmlObject.bannerImg.src);
+    $banner.attr("alt", htmlObject.bannerImg.alt);
+    
+    let $contentWrapper = $("#content-wrapper");
+    $contentWrapper.append(htmlObject.contentWrapper.divs);
+    
+    let $resultsMenu = $("#results-menu");
+    htmlObject.resultsMenu[0].addClass("menu-item-active");
+    $resultsMenu.append(htmlObject.resultsMenu);
+  }
 }
 
 function stripArticleFromTitle(title) {
