@@ -10,21 +10,21 @@
   <body>
     <main role="main">
       <section id="splash-page" class="splash">
-        <div class="splash-content">
+        <div class="splash-content large-text">
           <span class="responsive">What</span>
           <span class="responsive">should</span>
           <span class="responsive">I</span>
           <select id="result-type">
             <option disabled selected>____</option>
             <option value="books">read</option>
-            <option value="music">listen</option>
+            <option value="music">listen to</option>
             <option value="movie">watch</option>
           </select>
         </div>
       </section>
       
       <section id="get-favorites" class="splash hidden">
-        <div class="splash-content">
+        <div class="splash-content large-text">
           <div id="favorite-book" class="favorite-choice">
             My favorite book is <input id="favorite-book-txt" class="content-input" type="text">
           </div>
@@ -38,6 +38,16 @@
       </section>
       
       <section id="results" class="hidden">
+        <div id="results-wrapper" class="splash-content">
+          <div id="img-wrapper" class="wrapper-sec">
+            <img id="banner-img">
+          </div>
+          
+          <div id="content-wrapper" class="wrapper-sec">
+            <ul id="results-menu">
+            </ul>
+          </div>
+        </div>
       </section>
     </main>
     
