@@ -301,7 +301,7 @@ function generateMovieResultHTML() {
   
   let movieInfo = extractMovieInfo(movieInfoPath);
   
-  for (info in movieInfo) {
+  for (let info in movieInfo) {
     if (movieInfo.hasOwnProperty(info)) {
       let movieHTML = `<p><b>${info}</b>: ${movieInfo[info].join(", ")}</p>`;
       $infoDiv.append(movieHTML);
