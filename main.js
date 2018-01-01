@@ -308,7 +308,7 @@ function generateMovieResultHTML() {
     }
   }
   
-  $infoDiv.attr("id", "movie-info");
+  $infoDiv.attr("id", "result-info");
   returnObj.contentWrapper.divs.push($infoDiv);
   menu.push("info");
   
@@ -319,7 +319,7 @@ function generateMovieResultHTML() {
     $trailerDiv.html(`<iframe id="ytplayer" type="text/html" width="640" height="360" src="https://www.youtube.com/embed/${youtubeId}?rel=0&showinfo=0" frameborder="0"></iframe>`);
     
     // Push trailer to the navigational menu
-    $trailerDiv.attr("id", "movie-trailer");
+    $trailerDiv.attr("id", "result-trailer");
     $trailerDiv.addClass("hidden");
     returnObj.contentWrapper.divs.push($trailerDiv);
     menu.push("trailer");
@@ -331,7 +331,7 @@ function generateMovieResultHTML() {
     $reviewsDiv.append(reviews);
     
     // Push reviews to the navigational menu
-    $reviewsDiv.attr("id", "movie-reviews");
+    $reviewsDiv.attr("id", "result-reviews");
     $reviewsDiv.addClass("hidden");
     returnObj.contentWrapper.divs.push($reviewsDiv);
     menu.push("reviews");
@@ -592,6 +592,21 @@ function getRecommendationFromTasteDive() {
           );
 }
 
+function switchDisplayDiv(event) {
+  let $menuItemToActivate = $(event.target),
+      $activeMenuItem     = $("#results-menu").find(".menu-item-active"),
+      divIdDisplayed      = `#result-${$activeMenuItem.html()}`,
+      divIdToDisplay      = `#result-${$menuItemToActivate.html()}`;
+      
+  // Switch which menu item is active
+  $activeMenuItem.removeClass("menu-item-active");
+  $menuItemToActivate.addClass("menu-item-active");
+  
+  // Switch which div is displayed
+  $(divIdDisplayed).addClass("hidden");
+  $(divIdToDisplay).removeClass("hidden");
+}
+
 function addEventListeners() {
   $("#result-type").change(scrollToFavoritesInput);
   
@@ -603,6 +618,8 @@ function addEventListeners() {
   
   $("#favorite-movie").focusout(scrollToResults);
   $("#favorite-movie").keypress(scrollToResults);
+  
+  $("#results-menu").on("click", "li", switchDisplayDiv);
 }
 
 function initApp() {
