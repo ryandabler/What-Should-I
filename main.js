@@ -3,7 +3,7 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
       LIBRIVOX_API_ENDPOINT          = "https://librivox.org/api/feed/audiobooks/",
       IDREAMBOOKS_API_ENDPOINT       = "http://idreambooks.com/api/books/reviews.json",
       MUSICGRAPH_API_ENDPOINT        = "http://api.musicgraph.com/api/v2/artist/",
-      SPOTIFY_API_ENDPOINT           = "https://api.spotify.com/v1/artists/",
+      LAST_FM_API_ENDPOINT           = "http://ws.audioscrobbler.com/2.0/";
       THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie",
       THEMOVIEDB_MOVIE_API_ENDPOINT  = "https://api.themoviedb.org/3/movie/",
       MOVIE_POSTER_URL               = "http://image.tmdb.org/t/p/w780",
@@ -17,7 +17,7 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
                                       musicGraph:  { artist: null,
                                                      albums: null
                                                    },
-                                      spotify:     null,
+                                      last_fm:     null,
                                       theMovieDb:  null
                                     }
                   };
@@ -445,26 +445,31 @@ function getBookMetadata(bookTitle) {
   getInformationFromGoogle(bookTitle);
 }
 
-function processSpotifyResponse(response) {
-  APP_STATE.resultMetadata.spotify = response;
+function processLastFmResponse(response) {
+  APP_STATE.resultMetadata.last_fm = response.artist;
   
   renderResultToDOM();
 }
 
-function getArtistInformationFromSpotify(spotifyId) {
-  queryAPI( SPOTIFY_API_ENDPOINT + spotifyId,
+function getArtistInformationFromLastFm(artistName) {
+  let query = { method: "artist.getinfo",
+                artist:  artistName,
+                api_key: LAST_FM_KEY,
+                format: "json"
+              };
+  
+  queryAPI( LAST_FM_API_ENDPOINT,
            "json",
-            {},
-            processSpotifyResponse,
-            function(xhr, status) {console.log(xhr, status);},
-            { "Authorization": "Bearer " + SPOTIFY_OAUTH }
+            query,
+            processLastFmResponse,
+            function(xhr, status) {console.log(xhr, status);}
           );
 }
 
 function processMusicGraphAlbumResponse(response) {
   APP_STATE.resultMetadata.musicGraph.albums = response.data;
   
-  getArtistInformationFromSpotify(APP_STATE.resultMetadata.musicGraph.artist.spotify_id);
+  getArtistInformationFromLastFm(APP_STATE.results[0]);
 }
 
 function getArtistAlbums(artistId) {
