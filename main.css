@@ -128,6 +128,11 @@ body {
   overflow: hidden;
 }
 
+#result-reviews {
+  max-height: calc(70vh - 40px);
+  overflow-y: scroll;
+}
+
 @media only screen and (min-width: 640px) {
   .responsive {
     display: inline;
