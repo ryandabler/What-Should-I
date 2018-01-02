@@ -128,9 +128,10 @@ body {
   overflow: hidden;
 }
 
-#result-reviews {
+#content-wrapper > div {
   max-height: calc(70vh - 40px);
-  overflow-y: scroll;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 @media only screen and (min-width: 640px) {
