@@ -11,9 +11,8 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
                     resultType:     null,
                     results:        [],
                     sidebarItems:   [],
-                    resultMetadata: { google:      null,
-                                      librivox:    null,
-                                      iDreamBooks: null,
+                    resultMetadata: { librivox:    null,
+                                      book:        { },
                                       music:       { },
                                       movie:       { }
                                     }
@@ -97,53 +96,51 @@ function generateReviewHTML(review) {
   return $review;
 }
 
-function generateReviewSection($reviewSec) {
-  let reviewsHTML = [],
-      $h1         = $("<h1>");
+function generateReviewSection($reviewDiv) {
+  let reviewsHTML = [];
       
-  APP_STATE.resultMetadata.iDreamBooks.critic_reviews.forEach(review => reviewsHTML.push(generateReviewHTML(review)));
+  APP_STATE.resultMetadata.book.critic_reviews.forEach(review => reviewsHTML.push(generateReviewHTML(review)));
   
-  $h1.text("Reviews");
-  $h1.addClass("review-header");
-  
-  $reviewSec.append($h1, reviewsHTML);
-  $reviewSec.addClass("book-reviews");
+  $reviewDiv.append(reviewsHTML);
 }
 
-function generateBookResultHTML() {
-  let $mainInfoSec = $("<section>"),
-      $reviewSec   = $("<section>"),
-      $coverImg    = $("<img>");
+function generateBookResultHTML(returnObj) {
+  let $infoDiv       = $("<div>"),
+      $reviewDiv     = $("<div>"),
+      menu           = [],
+      book           = APP_STATE.results[0],
+      bookInfoPath   = APP_STATE.resultMetadata.book;
   
   // Set image attributes
-  $coverImg.attr("src", APP_STATE.resultMetadata.google.imageLinks.thumbnail);
-  $coverImg.attr("id", "cover-image");
+  returnObj.bannerImg.src = bookInfoPath.imageLinks.thumbnail;
+  returnObj.bannerImg.alt = `Cover of ${book}`;
   
-  // Generate reviews
-  generateReviewSection($reviewSec);
+  // Begin generating div content
+  returnObj.contentWrapper.divs = [];
   
   // Create main info section
-  let title   = APP_STATE.results[0],
-      authors = APP_STATE.resultMetadata.google.authors,
-      desc    = APP_STATE.resultMetadata.google.description,
-      $title  = $("<h1>"),
-      $author = $("<span>"),
-      $desc   = $("<p>");
+  let infoFields = ["title", "author", "description"],
+      bookInfo   = extractInfo(bookInfoPath, infoFields);
+  generateInfoHTML($infoDiv, bookInfo);
   
-  $author.text(` by ${authors.join(", ")}`);
-  $author.addClass("book-authors");
+  $infoDiv.attr("id", "result-info");
+  returnObj.contentWrapper.divs.push($infoDiv);
+  menu.push("info");
   
-  $title.text(title);
-  $title.append($author);
-  $title.addClass("book-title");
+  // Generate reviews
+  if (bookInfoPath.critic_reviews) {
+    generateReviewSection($reviewDiv);
   
-  $desc.text(desc);
-  $desc.addClass("book-description");
+    $reviewDiv.attr("id", "result-reviews");
+    $reviewDiv.addClass("hidden");
+    returnObj.contentWrapper.divs.push($reviewDiv);
+    menu.push("reviews");
+  }
   
-  $mainInfoSec.append( [$title, $coverImg, $desc] );
-  $mainInfoSec.addClass("book-info");
+  // Generate menu elements
+  returnObj.resultsMenu = generateMenu(menu);
   
-  return [ $mainInfoSec, $reviewSec ];
+  return returnObj;
 }
 
 function generateAlbumHTML(album) {
