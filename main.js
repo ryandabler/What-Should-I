@@ -14,6 +14,7 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
                     resultMetadata: { google:      null,
                                       librivox:    null,
                                       iDreamBooks: null,
+                                      music:       { },
                                       musicGraph:  { artist: null,
                                                      albums: null
                                                    },
@@ -179,35 +180,65 @@ function generateAlbumsSection($albumsSec) {
   $albumsSec.addClass("discography");
 }
 
+function extractInfo(infoPath, infoNameArr) {
+  let infoObj = {};
+  
+  for (let n = 0; n < infoNameArr; n++) {
+    let infoName = infoNameArr[n];
+    infoObj[infoName] = infoPath[infoName];
+  }
+  // artistInfo.name  = [ artistName ];
+  // artistInfo.genre = [ artistInfoPath.main_genre ];
+  //artistInfo.bio   =
+  
+  return infoObj;
+}
+
 function generateMusicResultHTML() {
-  let $mainInfoSec = $("<section>"),
-      $albumsSec   = $("<section>"),
-      $artistImg   = $("<img>");
+  let returnObj      = { bannerImg:      {},
+                         contentWrapper: {},
+                         resultsMenu:    []
+                       },
+      $infoDiv       = $("<div>"),
+      $discoDiv      = $("<div>"),
+      menu           = [],
+      artist         = APP_STATE.results[0],
+      artistInfoPath = APP_STATE.resultMetadata.musicGraph.artist;
   
   // Set image
-  $artistImg.attr("src", APP_STATE.resultMetadata.spotify.images[0].url);
-  $artistImg.attr("id", "cover-image");
+  returnObj.bannerImg.src = APP_STATE.resultMetadata.last_fm.image[4]["#text"];
+  returnObj.bannerImg.alt = `Picture of ${artist}`;
   
-  // Generate discography
-  generateAlbumsSection($albumsSec);
+  // Begin generating div content
+  returnObj.contentWrapper.divs = [];
   
   // Create main info section
-  let artist  = APP_STATE.results[0],
-      genre   = APP_STATE.resultMetadata.musicGraph.artist.main_genre;
-      $artist = $("<h1>"),
-      $genre  = $("<span>");
-      
-  $genre.text(`(${genre})`);
-  $genre.addClass("genre");
+  let infoFields = ["name", "main_genre", "decade", "county_of_origin", "bio"];
+  let artistInfo = extractInfo(artistInfoPath, infoFields);
   
-  $artist.text(`${artist} `);
-  $artist.append($genre);
-  $artist.addClass("artist");
+  for (let info in artistInfo) {
+    if (artistInfo.hasOwnProperty(info)) {
+      let artistHTML = `<p><b>${info}</b>: ${artistInfo[info].join(", ")}</p>`;
+      $infoDiv.append(artistHTML);
+    }
+  }
   
-  $mainInfoSec.append( [$artist, $artistImg] );
-  $mainInfoSec.addClass("artist-info");
+  $infoDiv.attr("id", "result-info");
+  returnObj.contentWrapper.divs.push($infoDiv);
+  menu.push("info");
   
-  return [ $mainInfoSec, $albumsSec ];
+  // Generate discography
+  generateAlbumsSection($discoDiv);
+  
+  $discoDiv.attr("id", "result-albums");
+  $discoDiv.addClass("hidden");
+  returnObj.contentWrapper.divs.push($discoDiv);
+  menu.push("albums");
+  
+  // Generate menu elements
+  returnObj.resultsMenu = generateMenu(menu);
+  
+  return returnObj;
 }
 
 function extractMovieInfo(movieInfoPath) {
@@ -344,32 +375,28 @@ function generateMovieResultHTML() {
 }
 
 function renderResultToDOM() {
-  let htmlSections;
   let htmlObject;
   if (APP_STATE.resultType === "books") {
-    htmlSections = generateBookResultHTML();
+    htmlObject = generateBookResultHTML();
   } else if (APP_STATE.resultType === "music") {
-    htmlSections = generateMusicResultHTML();
+    htmlObject = generateMusicResultHTML();
   } else if (APP_STATE.resultType === "movie") {
     htmlObject = generateMovieResultHTML();
   } else {
     
   }
   
-  if (htmlSections) {
-    $("#results").html(htmlSections);
-  } else {
-    let $banner = $("#banner-img");
-    $banner.attr("src", htmlObject.bannerImg.src);
-    $banner.attr("alt", htmlObject.bannerImg.alt);
-    
-    let $contentWrapper = $("#content-wrapper");
-    $contentWrapper.append(htmlObject.contentWrapper.divs);
-    
-    let $resultsMenu = $("#results-menu");
-    htmlObject.resultsMenu[0].addClass("menu-item-active");
-    $resultsMenu.append(htmlObject.resultsMenu);
-  }
+  let $banner = $("#banner-img"),
+      $contentWrapper = $("#content-wrapper"),
+      $resultsMenu = $("#results-menu");
+      
+  $banner.attr("src", htmlObject.bannerImg.src);
+  $banner.attr("alt", htmlObject.bannerImg.alt);
+  
+  $contentWrapper.append(htmlObject.contentWrapper.divs);
+  
+  htmlObject.resultsMenu[0].addClass("menu-item-active");
+  $resultsMenu.append(htmlObject.resultsMenu);
 }
 
 function stripArticleFromTitle(title) {
@@ -446,6 +473,7 @@ function getBookMetadata(bookTitle) {
 }
 
 function processLastFmResponse(response) {
+  Object.assign(APP_STATE.resultMetadata.music, response.artist);
   APP_STATE.resultMetadata.last_fm = response.artist;
   
   renderResultToDOM();
@@ -467,6 +495,7 @@ function getArtistInformationFromLastFm(artistName) {
 }
 
 function processMusicGraphAlbumResponse(response) {
+  APP_STATE.resultMetadata.music.albums = response.data;
   APP_STATE.resultMetadata.musicGraph.albums = response.data;
   
   getArtistInformationFromLastFm(APP_STATE.results[0]);
@@ -486,6 +515,7 @@ function getArtistAlbums(artistId) {
 }
 
 function processMusicGraphArtistResponse(response) {
+  Object.assign(APP_STATE.resultMetadata.music, response.data[0]);
   APP_STATE.resultMetadata.musicGraph.artist = response.data[0];
   
   getArtistAlbums(APP_STATE.resultMetadata.musicGraph.artist.id);
@@ -572,6 +602,7 @@ function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallbac
                            success:   successCallback,
                            error:     errorCallback
                           };
+  
   if (header !== null) {
     ajaxRequestObject.headers = header;
   }
