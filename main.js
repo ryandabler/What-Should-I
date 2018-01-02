@@ -381,7 +381,7 @@ function getInformationFromLibrivox(title) {
 }
 
 function processIDreamBooksResponse(response) {
-  APP_STATE.resultMetadata.iDreamBooks = response.book;
+  Object.assign(APP_STATE.resultMetadata.book, response.book);
   
   renderResultToDOM();
 }
@@ -400,9 +400,9 @@ function getInformationFromIDreamBooks(isbn) {
 }
 
 function processGoogleResponse(response) {
-  APP_STATE.resultMetadata.google = response.items[0].volumeInfo;
+  APP_STATE.resultMetadata.book = response.items[0].volumeInfo
   
-  let isbn = APP_STATE.resultMetadata.google.industryIdentifiers[0].identifier;
+  let isbn = APP_STATE.resultMetadata.book.industryIdentifiers[0].identifier;
   getInformationFromIDreamBooks(isbn);
 }
 
