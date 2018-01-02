@@ -15,10 +15,6 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
                                       librivox:    null,
                                       iDreamBooks: null,
                                       music:       { },
-                                      musicGraph:  { artist: null,
-                                                     albums: null
-                                                   },
-                                      last_fm:     null,
                                       theMovieDb:  null
                                     }
                   };
@@ -169,10 +165,10 @@ function generateAlbumsSection($albumsSec) {
       $h1        = $("<h1>");
       $albumList = $("<ul>");
       
-  APP_STATE.resultMetadata.musicGraph.albums.forEach(album => albumsHTML.push(generateAlbumHTML(album)));
   
   $h1.text("Discography");
   $h1.addClass("discography-header");
+  APP_STATE.resultMetadata.music.albums.forEach(album => albumsHTML.push(generateAlbumHTML(album)));
   
   $albumList.append(albumsHTML);
   
@@ -209,10 +205,10 @@ function generateMusicResultHTML() {
       $discoDiv      = $("<div>"),
       menu           = [],
       artist         = APP_STATE.results[0],
-      artistInfoPath = APP_STATE.resultMetadata.musicGraph.artist;
+      artistInfoPath = APP_STATE.resultMetadata.music;
   
   // Set image
-  returnObj.bannerImg.src = APP_STATE.resultMetadata.last_fm.image[4]["#text"];
+  returnObj.bannerImg.src = artistInfoPath.image[4]["#text"];
   returnObj.bannerImg.alt = `Picture of ${artist}`;
   
   // Begin generating div content
@@ -474,7 +470,7 @@ function getBookMetadata(bookTitle) {
 
 function processLastFmResponse(response) {
   Object.assign(APP_STATE.resultMetadata.music, response.artist);
-  APP_STATE.resultMetadata.last_fm = response.artist;
+  APP_STATE.resultMetadata.music.bio = APP_STATE.resultMetadata.music.bio.content;
   
   renderResultToDOM();
 }
@@ -496,7 +492,6 @@ function getArtistInformationFromLastFm(artistName) {
 
 function processMusicGraphAlbumResponse(response) {
   APP_STATE.resultMetadata.music.albums = response.data;
-  APP_STATE.resultMetadata.musicGraph.albums = response.data;
   
   getArtistInformationFromLastFm(APP_STATE.results[0]);
 }
@@ -516,9 +511,8 @@ function getArtistAlbums(artistId) {
 
 function processMusicGraphArtistResponse(response) {
   Object.assign(APP_STATE.resultMetadata.music, response.data[0]);
-  APP_STATE.resultMetadata.musicGraph.artist = response.data[0];
   
-  getArtistAlbums(APP_STATE.resultMetadata.musicGraph.artist.id);
+  getArtistAlbums(APP_STATE.resultMetadata.music.id);
 }
 
 function getArtistInformationFromMusicGraph(artistName) {
