@@ -3,7 +3,7 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
       LIBRIVOX_API_ENDPOINT          = "https://librivox.org/api/feed/audiobooks/",
       IDREAMBOOKS_API_ENDPOINT       = "http://idreambooks.com/api/books/reviews.json",
       MUSICGRAPH_API_ENDPOINT        = "http://api.musicgraph.com/api/v2/artist/",
-      SPOTIFY_API_ENDPOINT           = "https://api.spotify.com/v1/artists/",
+      LAST_FM_API_ENDPOINT           = "http://ws.audioscrobbler.com/2.0/";
       THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie",
       THEMOVIEDB_MOVIE_API_ENDPOINT  = "https://api.themoviedb.org/3/movie/",
       MOVIE_POSTER_URL               = "http://image.tmdb.org/t/p/w780",
@@ -14,10 +14,7 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
                     resultMetadata: { google:      null,
                                       librivox:    null,
                                       iDreamBooks: null,
-                                      musicGraph:  { artist: null,
-                                                     albums: null
-                                                   },
-                                      spotify:     null,
+                                      music:       { },
                                       theMovieDb:  null
                                     }
                   };
@@ -157,7 +154,7 @@ function generateAlbumHTML(album) {
   $year.text(album.release_year);
   
   $album.addClass("album");
-  $album.text(album.title);
+  $album.text(`${album.title} `);
   $album.append($year);
   
   return $album;
@@ -165,49 +162,75 @@ function generateAlbumHTML(album) {
 
 function generateAlbumsSection($albumsSec) {
   let albumsHTML = [],
-      $h1        = $("<h1>");
       $albumList = $("<ul>");
       
-  APP_STATE.resultMetadata.musicGraph.albums.forEach(album => albumsHTML.push(generateAlbumHTML(album)));
-  
-  $h1.text("Discography");
-  $h1.addClass("discography-header");
+  APP_STATE.resultMetadata.music.albums.forEach(album => albumsHTML.push(generateAlbumHTML(album)));
   
   $albumList.append(albumsHTML);
   
-  $albumsSec.append($h1, $albumList);
+  $albumsSec.append($albumList);
   $albumsSec.addClass("discography");
 }
 
+function extractInfo(infoPath, infoNameArr) {
+  let infoObj = {};
+  
+  for (let n = 0; n < infoNameArr.length; n++) {
+    let infoName = infoNameArr[n];
+    infoObj[infoName] = [ infoPath[infoName] ];
+  }
+  
+  return infoObj;
+}
+
+function generateInfoHTML($infoDiv, infoObj) {
+  for (let info in infoObj) {
+    if (infoObj.hasOwnProperty(info)) {
+      let infoHTML = `<p><b>${info}</b>: ${infoObj[info].join(", ")}</p>`;
+      $infoDiv.append(infoHTML);
+    }
+  }
+}
+
 function generateMusicResultHTML() {
-  let $mainInfoSec = $("<section>"),
-      $albumsSec   = $("<section>"),
-      $artistImg   = $("<img>");
+  let returnObj      = { bannerImg:      {},
+                         contentWrapper: {},
+                         resultsMenu:    []
+                       },
+      $infoDiv       = $("<div>"),
+      $discoDiv      = $("<div>"),
+      menu           = [],
+      artist         = APP_STATE.results[0],
+      artistInfoPath = APP_STATE.resultMetadata.music;
   
   // Set image
-  $artistImg.attr("src", APP_STATE.resultMetadata.spotify.images[0].url);
-  $artistImg.attr("id", "cover-image");
+  returnObj.bannerImg.src = artistInfoPath.image[4]["#text"];
+  returnObj.bannerImg.alt = `Picture of ${artist}`;
   
-  // Generate discography
-  generateAlbumsSection($albumsSec);
+  // Begin generating div content
+  returnObj.contentWrapper.divs = [];
   
   // Create main info section
-  let artist  = APP_STATE.results[0],
-      genre   = APP_STATE.resultMetadata.musicGraph.artist.main_genre;
-      $artist = $("<h1>"),
-      $genre  = $("<span>");
-      
-  $genre.text(`(${genre})`);
-  $genre.addClass("genre");
+  let infoFields = ["name", "main_genre", "decade", "country_of_origin", "bio"];
+  let artistInfo = extractInfo(artistInfoPath, infoFields);
+  generateInfoHTML($infoDiv, artistInfo);
   
-  $artist.text(`${artist} `);
-  $artist.append($genre);
-  $artist.addClass("artist");
+  $infoDiv.attr("id", "result-info");
+  returnObj.contentWrapper.divs.push($infoDiv);
+  menu.push("info");
   
-  $mainInfoSec.append( [$artist, $artistImg] );
-  $mainInfoSec.addClass("artist-info");
+  // Generate discography
+  generateAlbumsSection($discoDiv);
   
-  return [ $mainInfoSec, $albumsSec ];
+  $discoDiv.attr("id", "result-albums");
+  $discoDiv.addClass("hidden");
+  returnObj.contentWrapper.divs.push($discoDiv);
+  menu.push("albums");
+  
+  // Generate menu elements
+  returnObj.resultsMenu = generateMenu(menu);
+  
+  return returnObj;
 }
 
 function extractMovieInfo(movieInfoPath) {
@@ -301,7 +324,7 @@ function generateMovieResultHTML() {
   
   let movieInfo = extractMovieInfo(movieInfoPath);
   
-  for (info in movieInfo) {
+  for (let info in movieInfo) {
     if (movieInfo.hasOwnProperty(info)) {
       let movieHTML = `<p><b>${info}</b>: ${movieInfo[info].join(", ")}</p>`;
       $infoDiv.append(movieHTML);
@@ -344,32 +367,28 @@ function generateMovieResultHTML() {
 }
 
 function renderResultToDOM() {
-  let htmlSections;
   let htmlObject;
   if (APP_STATE.resultType === "books") {
-    htmlSections = generateBookResultHTML();
+    htmlObject = generateBookResultHTML();
   } else if (APP_STATE.resultType === "music") {
-    htmlSections = generateMusicResultHTML();
+    htmlObject = generateMusicResultHTML();
   } else if (APP_STATE.resultType === "movie") {
     htmlObject = generateMovieResultHTML();
   } else {
     
   }
   
-  if (htmlSections) {
-    $("#results").html(htmlSections);
-  } else {
-    let $banner = $("#banner-img");
-    $banner.attr("src", htmlObject.bannerImg.src);
-    $banner.attr("alt", htmlObject.bannerImg.alt);
-    
-    let $contentWrapper = $("#content-wrapper");
-    $contentWrapper.append(htmlObject.contentWrapper.divs);
-    
-    let $resultsMenu = $("#results-menu");
-    htmlObject.resultsMenu[0].addClass("menu-item-active");
-    $resultsMenu.append(htmlObject.resultsMenu);
-  }
+  let $banner = $("#banner-img"),
+      $contentWrapper = $("#content-wrapper"),
+      $resultsMenu = $("#results-menu");
+      
+  $banner.attr("src", htmlObject.bannerImg.src);
+  $banner.attr("alt", htmlObject.bannerImg.alt);
+  
+  $contentWrapper.append(htmlObject.contentWrapper.divs);
+  
+  htmlObject.resultsMenu[0].addClass("menu-item-active");
+  $resultsMenu.append(htmlObject.resultsMenu);
 }
 
 function stripArticleFromTitle(title) {
@@ -445,26 +464,32 @@ function getBookMetadata(bookTitle) {
   getInformationFromGoogle(bookTitle);
 }
 
-function processSpotifyResponse(response) {
-  APP_STATE.resultMetadata.spotify = response;
+function processLastFmResponse(response) {
+  Object.assign(APP_STATE.resultMetadata.music, response.artist);
+  APP_STATE.resultMetadata.music.bio = APP_STATE.resultMetadata.music.bio.content;
   
   renderResultToDOM();
 }
 
-function getArtistInformationFromSpotify(spotifyId) {
-  queryAPI( SPOTIFY_API_ENDPOINT + spotifyId,
+function getArtistInformationFromLastFm(artistName) {
+  let query = { method: "artist.getinfo",
+                artist:  artistName,
+                api_key: LAST_FM_KEY,
+                format: "json"
+              };
+  
+  queryAPI( LAST_FM_API_ENDPOINT,
            "json",
-            {},
-            processSpotifyResponse,
-            function(xhr, status) {console.log(xhr, status);},
-            { "Authorization": "Bearer " + SPOTIFY_OAUTH }
+            query,
+            processLastFmResponse,
+            function(xhr, status) {console.log(xhr, status);}
           );
 }
 
 function processMusicGraphAlbumResponse(response) {
-  APP_STATE.resultMetadata.musicGraph.albums = response.data;
+  APP_STATE.resultMetadata.music.albums = response.data;
   
-  getArtistInformationFromSpotify(APP_STATE.resultMetadata.musicGraph.artist.spotify_id);
+  getArtistInformationFromLastFm(APP_STATE.results[0]);
 }
 
 function getArtistAlbums(artistId) {
@@ -481,9 +506,9 @@ function getArtistAlbums(artistId) {
 }
 
 function processMusicGraphArtistResponse(response) {
-  APP_STATE.resultMetadata.musicGraph.artist = response.data[0];
+  Object.assign(APP_STATE.resultMetadata.music, response.data[0]);
   
-  getArtistAlbums(APP_STATE.resultMetadata.musicGraph.artist.id);
+  getArtistAlbums(APP_STATE.resultMetadata.music.id);
 }
 
 function getArtistInformationFromMusicGraph(artistName) {
@@ -567,6 +592,7 @@ function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallbac
                            success:   successCallback,
                            error:     errorCallback
                           };
+  
   if (header !== null) {
     ajaxRequestObject.headers = header;
   }
