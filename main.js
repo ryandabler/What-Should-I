@@ -183,13 +183,10 @@ function generateAlbumsSection($albumsSec) {
 function extractInfo(infoPath, infoNameArr) {
   let infoObj = {};
   
-  for (let n = 0; n < infoNameArr; n++) {
+  for (let n = 0; n < infoNameArr.length; n++) {
     let infoName = infoNameArr[n];
-    infoObj[infoName] = infoPath[infoName];
+    infoObj[infoName] = [ infoPath[infoName] ];
   }
-  // artistInfo.name  = [ artistName ];
-  // artistInfo.genre = [ artistInfoPath.main_genre ];
-  //artistInfo.bio   =
   
   return infoObj;
 }
@@ -222,9 +219,9 @@ function generateMusicResultHTML() {
   returnObj.contentWrapper.divs = [];
   
   // Create main info section
-  let infoFields = ["name", "main_genre", "decade", "county_of_origin", "bio"];
+  let infoFields = ["name", "main_genre", "decade", "country_of_origin", "bio"];
   let artistInfo = extractInfo(artistInfoPath, infoFields);
-  generateInfoHTML($infoDiv, artistInfo)
+  generateInfoHTML($infoDiv, artistInfo);
   
   $infoDiv.attr("id", "result-info");
   returnObj.contentWrapper.divs.push($infoDiv);
