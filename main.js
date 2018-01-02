@@ -194,6 +194,15 @@ function extractInfo(infoPath, infoNameArr) {
   return infoObj;
 }
 
+function generateInfoHTML($infoDiv, infoObj) {
+  for (let info in infoObj) {
+    if (infoObj.hasOwnProperty(info)) {
+      let infoHTML = `<p><b>${info}</b>: ${infoObj[info].join(", ")}</p>`;
+      $infoDiv.append(infoHTML);
+    }
+  }
+}
+
 function generateMusicResultHTML() {
   let returnObj      = { bannerImg:      {},
                          contentWrapper: {},
@@ -215,13 +224,7 @@ function generateMusicResultHTML() {
   // Create main info section
   let infoFields = ["name", "main_genre", "decade", "county_of_origin", "bio"];
   let artistInfo = extractInfo(artistInfoPath, infoFields);
-  
-  for (let info in artistInfo) {
-    if (artistInfo.hasOwnProperty(info)) {
-      let artistHTML = `<p><b>${info}</b>: ${artistInfo[info].join(", ")}</p>`;
-      $infoDiv.append(artistHTML);
-    }
-  }
+  generateInfoHTML($infoDiv, artistInfo)
   
   $infoDiv.attr("id", "result-info");
   returnObj.contentWrapper.divs.push($infoDiv);
