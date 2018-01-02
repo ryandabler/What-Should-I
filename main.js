@@ -154,7 +154,7 @@ function generateAlbumHTML(album) {
   $year.text(album.release_year);
   
   $album.addClass("album");
-  $album.text(album.title);
+  $album.text(`${album.title} `);
   $album.append($year);
   
   return $album;
@@ -162,17 +162,13 @@ function generateAlbumHTML(album) {
 
 function generateAlbumsSection($albumsSec) {
   let albumsHTML = [],
-      $h1        = $("<h1>");
       $albumList = $("<ul>");
       
-  
-  $h1.text("Discography");
-  $h1.addClass("discography-header");
   APP_STATE.resultMetadata.music.albums.forEach(album => albumsHTML.push(generateAlbumHTML(album)));
   
   $albumList.append(albumsHTML);
   
-  $albumsSec.append($h1, $albumList);
+  $albumsSec.append($albumList);
   $albumsSec.addClass("discography");
 }
 
