@@ -15,7 +15,7 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
                                       librivox:    null,
                                       iDreamBooks: null,
                                       music:       { },
-                                      theMovieDb:  null
+                                      movie:       { }
                                     }
                   };
 
@@ -177,7 +177,14 @@ function extractInfo(infoPath, infoNameArr) {
   
   for (let n = 0; n < infoNameArr.length; n++) {
     let infoName = infoNameArr[n];
-    infoObj[infoName] = [ infoPath[infoName] ];
+    
+    // infoPath[infoName] could be an array of values
+    // if so, we don't want to put it into another array
+    if (infoPath[infoName] instanceof Array) {
+      infoObj[infoName] = infoPath[infoName];
+    } else {
+      infoObj[infoName] = [ infoPath[infoName] ];
+    }
   }
   
   return infoObj;
@@ -233,39 +240,6 @@ function generateMusicResultHTML() {
   return returnObj;
 }
 
-function extractMovieInfo(movieInfoPath) {
-  let movieInfo = {},
-      cast      = movieInfoPath.credits.cast.filter( (elem, idx) => idx < 4),
-      credits   = movieInfoPath.credits.crew.filter(elem => elem.job.search(/^Director$|^Screenplay$|^Producer$/i) > -1);
-  
-  // Get only the first four cast members
-  movieInfo.cast = [];
-  cast.forEach(castMember => movieInfo.cast.push(castMember.name));
-  
-  // Add crew information to movieInfo
-  // The crew object will have as values for each key an array of names matching the given job
-  for (let n = 0; n < credits.length; n++) {
-    let crewMember = credits[n];
-    if (movieInfo.hasOwnProperty(crewMember.job)) {
-      movieInfo[crewMember.job].push(crewMember.name);
-    } else {
-      movieInfo[crewMember.job] = [crewMember.name];
-    }
-  }
-  
-  // Add synopsis
-  movieInfo.synopsis = [ movieInfoPath.overview ];
-  
-  // Add genre info
-  movieInfo.genres   = [];
-  movieInfoPath.genres.forEach(elem => movieInfo.genres.push(elem.name));
-  
-  // Add release date
-  movieInfo.released = [ new Date(movieInfoPath.release_date) ];
-  
-  return movieInfo;
-}
-
 function processMovieReview(review) {
   let $review  = $("<article>"),
       $author  = $("<h1>"),
@@ -312,7 +286,7 @@ function generateMovieResultHTML() {
       $reviewsDiv   = $("<div>"),
       $moreDiv      = $("<div>"),
       menu          = [], // Will be used to generate <li> navigational elements
-      movieInfoPath = APP_STATE.resultMetadata.theMovieDb,
+      movieInfoPath = APP_STATE.resultMetadata.movie,
       movieName     = APP_STATE.results[0];
   
   // Set $image values
@@ -322,14 +296,9 @@ function generateMovieResultHTML() {
   // Gather important data about movie and assemble into $infoDiv
   returnObj.contentWrapper.divs = [];
   
-  let movieInfo = extractMovieInfo(movieInfoPath);
-  
-  for (let info in movieInfo) {
-    if (movieInfo.hasOwnProperty(info)) {
-      let movieHTML = `<p><b>${info}</b>: ${movieInfo[info].join(", ")}</p>`;
-      $infoDiv.append(movieHTML);
-    }
-  }
+  let infoFields = ["cast", "producer", "director", "screenplay", "overview", "genres", "release_date"];
+  let movieInfo = extractInfo(movieInfoPath, infoFields);
+  generateInfoHTML($infoDiv, movieInfo);
   
   $infoDiv.attr("id", "result-info");
   returnObj.contentWrapper.divs.push($infoDiv);
@@ -378,9 +347,9 @@ function renderResultToDOM() {
     
   }
   
-  let $banner = $("#banner-img"),
+  let $banner         = $("#banner-img"),
       $contentWrapper = $("#content-wrapper"),
-      $resultsMenu = $("#results-menu");
+      $resultsMenu    = $("#results-menu");
       
   $banner.attr("src", htmlObject.bannerImg.src);
   $banner.attr("alt", htmlObject.bannerImg.alt);
@@ -530,7 +499,19 @@ function getArtistMetadata(artistName) {
 }
 
 function processMovieInformation(response) {
-  APP_STATE.resultMetadata.theMovieDb = response;
+  Object.assign(APP_STATE.resultMetadata.movie, response);
+  
+  // Pre-process some elements of the response to set up for easier HTML generation
+  APP_STATE.resultMetadata.movie.cast   = [];
+  APP_STATE.resultMetadata.movie.genres = [];
+  
+  let cast   = response.credits.cast.filter( (elem, idx) => idx < 4);
+      crew   = response.credits.crew.filter(elem => elem.job.search(/^Director$|^Screenplay$|^Producer$/i) > -1),
+      genres = response.genres;
+      
+  cast.forEach(castMember => APP_STATE.resultMetadata.movie.cast.push(castMember.name));
+  crew.forEach(crewMember => APP_STATE.resultMetadata.movie[crewMember.job.toLowerCase()] = crewMember.name);
+  genres.forEach(genre => APP_STATE.resultMetadata.movie.genres.push(genre.name));
   
   renderResultToDOM();
 }
@@ -549,7 +530,8 @@ function getMovieInformation(movieId) {
 }
 
 function processTheMovieDbSearchResponse(response) {
-  getMovieInformation(response.results[0].id)
+  APP_STATE.resultMetadata.movie = response.results[0];
+  getMovieInformation(APP_STATE.resultMetadata.movie.id);
 }
 
 function getInformationFromTheMovieDb(movieTitle) {
