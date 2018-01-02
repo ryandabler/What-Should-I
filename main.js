@@ -196,12 +196,8 @@ function generateInfoHTML($infoDiv, infoObj) {
   }
 }
 
-function generateMusicResultHTML() {
-  let returnObj      = { bannerImg:      {},
-                         contentWrapper: {},
-                         resultsMenu:    []
-                       },
-      $infoDiv       = $("<div>"),
+function generateMusicResultHTML(returnObj) {
+  let $infoDiv       = $("<div>"),
       $discoDiv      = $("<div>"),
       menu           = [],
       artist         = APP_STATE.results[0],
@@ -273,12 +269,8 @@ function generateMenu(menuItemsArr) {
   return liItems;
 }
 
-function generateMovieResultHTML() {
-  let returnObj     = { bannerImg:      {},
-                        contentWrapper: {},
-                        resultsMenu:    []
-                      },
-      $infoDiv      = $("<div>"),
+function generateMovieResultHTML(returnObj) {
+  let $infoDiv      = $("<div>"),
       $trailerDiv   = $("<div>"),
       $reviewsDiv   = $("<div>"),
       $moreDiv      = $("<div>"),
@@ -333,13 +325,16 @@ function generateMovieResultHTML() {
 }
 
 function renderResultToDOM() {
-  let htmlObject;
+  let htmlObject = { bannerImg:      {},
+                     contentWrapper: {},
+                     resultsMenu:    []
+                   };
   if (APP_STATE.resultType === "books") {
-    htmlObject = generateBookResultHTML();
+    generateBookResultHTML(htmlObject);
   } else if (APP_STATE.resultType === "music") {
-    htmlObject = generateMusicResultHTML();
+    generateMusicResultHTML(htmlObject);
   } else if (APP_STATE.resultType === "movie") {
-    htmlObject = generateMovieResultHTML();
+    generateMovieResultHTML(htmlObject);
   } else {
     
   }
