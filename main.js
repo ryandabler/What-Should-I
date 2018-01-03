@@ -26,51 +26,28 @@ function scrollToFavoritesInput() {
   $("#favorite-book-txt").focus();
 }
 
-function scrollToFavoriteBand(event) {
-  if (event.key === "Enter") {
-    // Blur input box to force the focusout event to fire.
-    // This prevents duplicate API calls because all action
-    // is pushed to the focusout event rather than the keypress
-    // event while still maintaining the appearance of both
-    // causing the app to progress.
-    $("#favorite-book-txt").blur();
-  } else if (event.type === "focusout") {
-    $("#favorite-book").addClass("hidden");
-    $("#favorite-band").removeClass("hidden");
-    $("#favorite-band-txt").focus();
+function scrollToNextSection() {
+  let $currentSec = $("section:not(.hidden)"),
+      $nextSec    = $currentSec.next(),
+      $nextInput  = $nextSec.find("input");
+  
+  $currentSec.toggleClass("hidden");
+  $nextSec   .toggleClass("hidden");
+  
+  // Toggle focus on input if there is one
+  if ($nextInput.length > 0) {
+    $nextInput.focus();
   }
 }
 
-function scrollToFavoriteMovie(event) {
+function inputEventHandler(event) {
   if (event.key === "Enter") {
-    // Blur input box to force the focusout event to fire.
-    // This prevents duplicate API calls because all action
-    // is pushed to the focusout event rather than the keypress
-    // event while still maintaining the appearance of both
-    // causing the app to progress.
-    $("#favorite-band-txt").blur();
-  } else if (event.type === "focusout") {
-    $("#favorite-band").addClass("hidden");
-    $("#favorite-movie").removeClass("hidden");
-    $("#favorite-movie-txt").focus();
-  }
-}
-
-function scrollToResults(event) {
-  if (event.key === "Enter") {
-    // Blur input box to force the focusout event to fire.
-    // This prevents duplicate API calls because all action
-    // is pushed to the focusout event rather than the keypress
-    // event while still maintaining the appearance of both
-    // causing the app to progress.
-    $("#favorite-movie-txt").blur();
-  } else if (event.type === "focusout") {
-    // Get TasteDive data
-    getRecommendationFromTasteDive();
+    // If last input section, query TasteDive
+    if (event.target.id === "favorite-movie-txt") {
+      getRecommendationFromTasteDive();
+    }
     
-    $("#favorite-movie").addClass("hidden");
-    $("#get-favorites").addClass("hidden");
-    $("#results").removeClass("hidden");
+    scrollToNextSection();
   }
 }
 
@@ -583,6 +560,7 @@ function getRecommendationFromTasteDive() {
                        k:         TASTEDIVE_KEY,
                        callback: "dummyCallback"
                      };
+  APP_STATE.resultType = $("#result-type").find(":selected").val();
   
   queryAPI( TASTEDIVE_API_ENDPOINT,
            "jsonp",
@@ -608,18 +586,11 @@ function switchDisplayDiv(event) {
 }
 
 function addEventListeners() {
-  $("#result-type").change(scrollToFavoritesInput);
-  
-  $("#favorite-book").focusout(scrollToFavoriteBand);
-  $("#favorite-book").keypress(scrollToFavoriteBand);
-  
-  $("#favorite-band").focusout(scrollToFavoriteMovie);
-  $("#favorite-band").keypress(scrollToFavoriteMovie);
-  
-  $("#favorite-movie").focusout(scrollToResults);
-  $("#favorite-movie").keypress(scrollToResults);
-  
-  $("#results-menu").on("click", "li", switchDisplayDiv);
+  $("#result-type")       .change  (scrollToNextSection);
+  $("#favorite-book-txt") .keypress(inputEventHandler);
+  $("#favorite-band-txt") .keypress(inputEventHandler);
+  $("#favorite-movie-txt").keypress(inputEventHandler);
+  $("#results-menu")      .on      ("click", "li", switchDisplayDiv);
 }
 
 function initApp() {
