@@ -1,7 +1,7 @@
 const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
       GOOGLE_BOOKS_API_ENDPOINT      = "https://www.googleapis.com/books/v1/volumes",
       LIBRIVOX_API_ENDPOINT          = "https://librivox.org/api/feed/audiobooks/",
-      IDREAMBOOKS_API_ENDPOINT       = "http://idreambooks.com/api/books/reviews.json",
+      IDREAMBOOKS_API_ENDPOINT       = "https://idreambooks.com/api/books/reviews.json",
       MUSICGRAPH_API_ENDPOINT        = "http://api.musicgraph.com/api/v2/artist/",
       LAST_FM_API_ENDPOINT           = "http://ws.audioscrobbler.com/2.0/";
       THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie",
