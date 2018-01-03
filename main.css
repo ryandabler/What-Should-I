@@ -26,6 +26,7 @@ body {
 
 .splash-content {
   margin: auto;
+  width: 300px;
 }
 
 .large-text {
@@ -70,23 +71,18 @@ body {
   margin: auto;
 }
 
-.wrapper-sec:not(:last-child) {
-  padding-right: 10px;
-}
-
 #banner-img {
   height: 70vh;
 }
 
-#content-wrapper {
-  width: 39vw;
-  vertical-align: top;
-}
-
 .wrapper-sec {
-  display: inline-block;
+  display: block;
 }
 
+#content-wrapper > div {
+  margin-bottom: 20px;
+}
+  
 #results-menu {
   list-style: none;
   padding: 0;
@@ -128,14 +124,32 @@ body {
   overflow: hidden;
 }
 
-#content-wrapper > div {
-  max-height: calc(70vh - 40px);
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
 @media only screen and (min-width: 640px) {
+  #content-wrapper {
+    width: 39vw;
+    vertical-align: top;
+  }
+  
+  .splash-content {
+    width: auto;
+  }
+  
   .responsive {
     display: inline;
+  }
+  
+  #content-wrapper > div {
+    max-height: calc(70vh - 40px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-bottom: auto;
+  }
+  
+  .wrapper-sec {
+    display: inline-block;
+  }
+  
+  .wrapper-sec:not(:last-child) {
+    padding-right: 10px;
   }
 }
