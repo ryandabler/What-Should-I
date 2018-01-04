@@ -18,14 +18,6 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
                                     }
                   };
 
-function scrollToFavoritesInput() {
-  APP_STATE.resultType = $("#result-type").find(":selected").val();
-  
-  $("#splash-page").addClass("hidden");
-  $("#get-favorites").removeClass("hidden");
-  $("#favorite-book-txt").focus();
-}
-
 function scrollToNextSection() {
   let $currentSec = $("section:not(.hidden)"),
       $nextSec    = $currentSec.next(),
