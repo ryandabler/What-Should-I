@@ -15,10 +15,10 @@
           <span class="responsive">should</span>
           <span class="responsive">I</span>
           <select id="result-type">
-            <option disabled selected>____</option>
-            <option value="books">read</option>
-            <option value="music">listen to</option>
-            <option value="movie">watch</option>
+            <option data-val="___" disabled selected>____</option>
+            <option data-val="read" value="books">read</option>
+            <option data-val="listen to" value="music">listen to</option>
+            <option data-val="watch" value="movie">watch</option>
           </select>
         </div>
       </section>
@@ -56,6 +56,14 @@
         <p class="bottom hidden user-msg">Press <span class="keyboard" tabindex="0">Enter</span>!</p>
       </section>
       
+      <section id="loading-results" class="splash hidden">
+        <div id="loading-results-container" class="splash-content large-text">
+          <i id="cog" class="fa fa-cog fa-spin fa-fw" aria-hidden="true"></i> You should <span id="result-type-txt"></span>...
+          <div id="result-name"></div>
+        </div>
+        <p class="bottom hidden user-msg">Press <span class="keyboard" tabindex="0">Enter</span>!</p>
+      </section>
+      
       <section id="results" class="splash hidden">
         <div id="results-wrapper" class="splash-content">
           <div id="img-wrapper" class="wrapper-sec">
@@ -70,6 +78,7 @@
       </section>
     </main>
     
+    <script src="https://use.fontawesome.com/4d5590af89.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" type="text/javascript"></script>
     <script src="keys.js" type="text/javascript"></script>
     <script src="main.js" type="text/javascript"></script>

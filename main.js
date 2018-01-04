@@ -32,11 +32,17 @@ function scrollToNextSection() {
   }
 }
 
+function generateLoadingHTML() {
+  let typeTxt = $("#result-type").find(":selected").attr("data-val");
+  $("#result-type-txt").text(typeTxt);
+}
+
 function inputEventHandler(event) {
   if (event.key === "Enter") {
     // If last input section, query TasteDive
     if (event.target.id === "favorite-movie-txt") {
       getRecommendationFromTasteDive();
+      generateLoadingHTML();
     }
     
     scrollToNextSection();
@@ -279,6 +285,13 @@ function generateMovieResultHTML(returnObj) {
   return returnObj;
 }
 
+function markLoadingAsComplete() {
+  $("#result-name").text(APP_STATE.results[0]);
+  displayUserMessage();
+  $("#loading-results").keypress(inputEventHandler);
+  $("#loading-results p.user-msg span.keyboard").focus();
+}
+
 function renderResultToDOM() {
   let htmlObject = { bannerImg:      {},
                      contentWrapper: {},
@@ -305,6 +318,9 @@ function renderResultToDOM() {
   
   htmlObject.resultsMenu[0].addClass("menu-item-active");
   $resultsMenu.append(htmlObject.resultsMenu);
+  
+  // Indicate that loading is over
+  markLoadingAsComplete();
 }
 
 function stripArticleFromTitle(title) {
@@ -580,7 +596,7 @@ function switchDisplayDiv(event) {
   $(divIdToDisplay).removeClass("hidden");
 }
 
-function displayUserMessage(event) {
+function displayUserMessage(event = null) {
   let $userMsg = $("section:not(.hidden) .user-msg");
   $userMsg.removeClass("hidden");
 }
