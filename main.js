@@ -18,59 +18,34 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
                                     }
                   };
 
-function scrollToFavoritesInput() {
-  APP_STATE.resultType = $("#result-type").find(":selected").val();
+function scrollToNextSection() {
+  let $currentSec = $("section:not(.hidden)"),
+      $nextSec    = $currentSec.next(),
+      $nextInput  = $nextSec.find("input");
   
-  $("#splash-page").addClass("hidden");
-  $("#get-favorites").removeClass("hidden");
-  $("#favorite-book-txt").focus();
-}
-
-function scrollToFavoriteBand(event) {
-  if (event.key === "Enter") {
-    // Blur input box to force the focusout event to fire.
-    // This prevents duplicate API calls because all action
-    // is pushed to the focusout event rather than the keypress
-    // event while still maintaining the appearance of both
-    // causing the app to progress.
-    $("#favorite-book-txt").blur();
-  } else if (event.type === "focusout") {
-    $("#favorite-book").addClass("hidden");
-    $("#favorite-band").removeClass("hidden");
-    $("#favorite-band-txt").focus();
+  $currentSec.toggleClass("hidden");
+  $nextSec   .toggleClass("hidden");
+  
+  // Toggle focus on input if there is one
+  if ($nextInput.length > 0) {
+    $nextInput.focus();
   }
 }
 
-function scrollToFavoriteMovie(event) {
-  if (event.key === "Enter") {
-    // Blur input box to force the focusout event to fire.
-    // This prevents duplicate API calls because all action
-    // is pushed to the focusout event rather than the keypress
-    // event while still maintaining the appearance of both
-    // causing the app to progress.
-    $("#favorite-band-txt").blur();
-  } else if (event.type === "focusout") {
-    $("#favorite-band").addClass("hidden");
-    $("#favorite-movie").removeClass("hidden");
-    $("#favorite-movie-txt").focus();
-  }
+function generateLoadingHTML() {
+  let typeTxt = $("#result-type").find(":selected").attr("data-val");
+  $("#result-type-txt").text(typeTxt);
 }
 
-function scrollToResults(event) {
+function inputEventHandler(event) {
   if (event.key === "Enter") {
-    // Blur input box to force the focusout event to fire.
-    // This prevents duplicate API calls because all action
-    // is pushed to the focusout event rather than the keypress
-    // event while still maintaining the appearance of both
-    // causing the app to progress.
-    $("#favorite-movie-txt").blur();
-  } else if (event.type === "focusout") {
-    // Get TasteDive data
-    getRecommendationFromTasteDive();
+    // If last input section, query TasteDive
+    if (event.target.id === "favorite-movie-txt") {
+      getRecommendationFromTasteDive();
+      generateLoadingHTML();
+    }
     
-    $("#favorite-movie").addClass("hidden");
-    $("#get-favorites").addClass("hidden");
-    $("#results").removeClass("hidden");
+    scrollToNextSection();
   }
 }
 
@@ -78,21 +53,16 @@ function dummyCallback(response) { console.log("dummy"); }
 
 function generateReviewHTML(review) {
   let $review  = $("<article>"),
-      $source  = $("<a>"),
-      $snippet = $("<p>");
+      $author  = $("<h1>"),
+      $content = $("<p>");
   
-  // Process source link
-  $source.attr("href", review.review_link);
-  $source.addClass("review-source");
-  $source.text(review.source);
+  $author.html(`<a href=${review.url}>${review.author}</a>`);
+  $author.addClass("review-author");
+  $content.text(review.content);
+  $content.addClass("review-content");
+  $review.append( [$author, $content] );
+  $review.addClass("review");
   
-  // Process snippet
-  $snippet.addClass("review-snippet");
-  $snippet.text(review.snippet);
-  
-  // Put everything together
-  $review.addClass("book-review");
-  $review.append( [$source, $snippet] );
   return $review;
 }
 
@@ -119,7 +89,7 @@ function generateBookResultHTML(returnObj) {
   returnObj.contentWrapper.divs = [];
   
   // Create main info section
-  let infoFields = ["title", "author", "description"],
+  let infoFields = ["title", "sub_title", "author", "description"],
       bookInfo   = extractInfo(bookInfoPath, infoFields);
   generateInfoHTML($infoDiv, bookInfo);
   
@@ -128,7 +98,7 @@ function generateBookResultHTML(returnObj) {
   menu.push("info");
   
   // Generate reviews
-  if (bookInfoPath.critic_reviews) {
+  if (bookInfoPath.critic_reviews && bookInfoPath.critic_reviews.length > 0) {
     generateReviewSection($reviewDiv);
   
     $reviewDiv.attr("id", "result-reviews");
@@ -175,12 +145,15 @@ function extractInfo(infoPath, infoNameArr) {
   for (let n = 0; n < infoNameArr.length; n++) {
     let infoName = infoNameArr[n];
     
-    // infoPath[infoName] could be an array of values
-    // if so, we don't want to put it into another array
-    if (infoPath[infoName] instanceof Array) {
-      infoObj[infoName] = infoPath[infoName];
-    } else {
-      infoObj[infoName] = [ infoPath[infoName] ];
+    // Make sure infoName is even in the infoPath, else skip
+    if (infoPath.hasOwnProperty(infoName) && infoPath[infoName]) {
+      // infoPath[infoName] could be an array of values
+      // if so, we don't want to put it into another array
+      if (infoPath[infoName] instanceof Array) {
+        infoObj[infoName] = infoPath[infoName];
+      } else {
+        infoObj[infoName] = [ infoPath[infoName] ];
+      }
     }
   }
   
@@ -233,23 +206,11 @@ function generateMusicResultHTML(returnObj) {
   return returnObj;
 }
 
-function processMovieReview(review) {
-  let $review  = $("<article>"),
-      $author  = $("<h1>"),
-      $content = $("<p>");
-  
-  $author.html(`<a href=${review.url}>${review.author}</a>`);
-  $content.text(review.content);
-  $review.append( [$author, $content] );
-  
-  return $review;
-}
-
 function extractMovieReviews(movieInfoPath) {
   let reviews          = movieInfoPath.reviews.results,
       processedReviews = [];
       
-  reviews.forEach(review => processedReviews.push(processMovieReview(review)));
+  reviews.forEach(review => processedReviews.push(generateReviewHTML(review)));
   
   return processedReviews;
 }
@@ -324,6 +285,13 @@ function generateMovieResultHTML(returnObj) {
   return returnObj;
 }
 
+function markLoadingAsComplete() {
+  $("#result-name").text(APP_STATE.results[0]);
+  displayUserMessage();
+  $("#loading-results").keypress(inputEventHandler);
+  $("#loading-results p.user-msg span.keyboard").focus();
+}
+
 function renderResultToDOM() {
   let htmlObject = { bannerImg:      {},
                      contentWrapper: {},
@@ -350,6 +318,9 @@ function renderResultToDOM() {
   
   htmlObject.resultsMenu[0].addClass("menu-item-active");
   $resultsMenu.append(htmlObject.resultsMenu);
+  
+  // Indicate that loading is over
+  markLoadingAsComplete();
 }
 
 function stripArticleFromTitle(title) {
@@ -381,7 +352,24 @@ function getInformationFromLibrivox(title) {
 }
 
 function processIDreamBooksResponse(response) {
-  Object.assign(APP_STATE.resultMetadata.book, response.book);
+  let responseObj = { author:    response.book.author,
+                      genre:     response.book.genre,
+                      sub_title: response.book.sub_title,
+                      title:     response.book.title,
+                      pages:     response.book.pages,
+                      critic_reviews: []
+  };
+  
+  response.book.critic_reviews.forEach(elem => responseObj.critic_reviews.push(
+    {
+      url:     elem.review_link,
+      author:  elem.source,
+      content: elem.snippet,
+      date:    elem.review_date,
+      stars:   elem.star_rating
+  }));
+  
+  Object.assign(APP_STATE.resultMetadata.book, responseObj);
   
   renderResultToDOM();
 }
@@ -575,6 +563,7 @@ function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallbac
 }
 
 function getRecommendationFromTasteDive() {
+  APP_STATE.resultType = $("#result-type").find(":selected").val();
   const favBook    = $("#favorite-book-txt").val(),
         favBand    = $("#favorite-band-txt").val(),
         favMovie   = $("#favorite-movie-txt").val(),
@@ -607,19 +596,20 @@ function switchDisplayDiv(event) {
   $(divIdToDisplay).removeClass("hidden");
 }
 
+function displayUserMessage(event = null) {
+  let $userMsg = $("section:not(.hidden) .user-msg");
+  $userMsg.removeClass("hidden");
+}
+
 function addEventListeners() {
-  $("#result-type").change(scrollToFavoritesInput);
-  
-  $("#favorite-book").focusout(scrollToFavoriteBand);
-  $("#favorite-book").keypress(scrollToFavoriteBand);
-  
-  $("#favorite-band").focusout(scrollToFavoriteMovie);
-  $("#favorite-band").keypress(scrollToFavoriteMovie);
-  
-  $("#favorite-movie").focusout(scrollToResults);
-  $("#favorite-movie").keypress(scrollToResults);
-  
-  $("#results-menu").on("click", "li", switchDisplayDiv);
+  $("#result-type")       .change  (scrollToNextSection);
+  $("#get-favorite-book") .keypress(inputEventHandler);
+  $("#favorite-book-txt") .keypress(displayUserMessage);
+  $("#get-favorite-band") .keypress(inputEventHandler);
+  $("#favorite-band-txt") .keypress(displayUserMessage);
+  $("#get-favorite-movie").keypress(inputEventHandler);
+  $("#favorite-movie-txt").keypress(displayUserMessage);
+  $("#results-menu")      .on      ("click", "li", switchDisplayDiv);
 }
 
 function initApp() {
