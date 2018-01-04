@@ -55,21 +55,16 @@ function dummyCallback(response) { console.log("dummy"); }
 
 function generateReviewHTML(review) {
   let $review  = $("<article>"),
-      $source  = $("<a>"),
-      $snippet = $("<p>");
+      $author  = $("<h1>"),
+      $content = $("<p>");
   
-  // Process source link
-  $source.attr("href", review.review_link);
-  $source.addClass("review-source");
-  $source.text(review.source);
+  $author.html(`<a href=${review.url}>${review.author}</a>`);
+  $author.addClass("review-author");
+  $content.text(review.content);
+  $content.addClass("review-content");
+  $review.append( [$author, $content] );
+  $review.addClass("review");
   
-  // Process snippet
-  $snippet.addClass("review-snippet");
-  $snippet.text(review.snippet);
-  
-  // Put everything together
-  $review.addClass("book-review");
-  $review.append( [$source, $snippet] );
   return $review;
 }
 
@@ -210,23 +205,11 @@ function generateMusicResultHTML(returnObj) {
   return returnObj;
 }
 
-function processMovieReview(review) {
-  let $review  = $("<article>"),
-      $author  = $("<h1>"),
-      $content = $("<p>");
-  
-  $author.html(`<a href=${review.url}>${review.author}</a>`);
-  $content.text(review.content);
-  $review.append( [$author, $content] );
-  
-  return $review;
-}
-
 function extractMovieReviews(movieInfoPath) {
   let reviews          = movieInfoPath.reviews.results,
       processedReviews = [];
       
-  reviews.forEach(review => processedReviews.push(processMovieReview(review)));
+  reviews.forEach(review => processedReviews.push(generateReviewHTML(review)));
   
   return processedReviews;
 }
@@ -358,7 +341,24 @@ function getInformationFromLibrivox(title) {
 }
 
 function processIDreamBooksResponse(response) {
-  Object.assign(APP_STATE.resultMetadata.book, response.book);
+  let responseObj = { author:    response.book.author,
+                      genre:     response.book.genre,
+                      sub_title: response.book.sub_title,
+                      title:     response.book.title,
+                      pages:     response.book.pages,
+                      critic_reviews: []
+  };
+  
+  response.book.critic_reviews.forEach(elem => responseObj.critic_reviews.push(
+    {
+      url:     elem.review_link,
+      author:  elem.source,
+      content: elem.snippet,
+      date:    elem.review_date,
+      stars:   elem.star_rating
+  }));
+  
+  Object.assign(APP_STATE.resultMetadata.book, responseObj);
   
   renderResultToDOM();
 }
