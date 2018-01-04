@@ -552,6 +552,7 @@ function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallbac
 }
 
 function getRecommendationFromTasteDive() {
+  APP_STATE.resultType = $("#result-type").find(":selected").val();
   const favBook    = $("#favorite-book-txt").val(),
         favBand    = $("#favorite-band-txt").val(),
         favMovie   = $("#favorite-movie-txt").val(),
@@ -560,7 +561,6 @@ function getRecommendationFromTasteDive() {
                        k:         TASTEDIVE_KEY,
                        callback: "dummyCallback"
                      };
-  APP_STATE.resultType = $("#result-type").find(":selected").val();
   
   queryAPI( TASTEDIVE_API_ENDPOINT,
            "jsonp",
