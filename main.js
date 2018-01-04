@@ -337,8 +337,8 @@ function processLibrivoxResponse(response) {
 }
 
 function getInformationFromLibrivox(title) {
-  let title = stripArticleFromTitle(title);
-  const query = { title:     title,
+  let newTitle = stripArticleFromTitle(title);
+  const query = { title:     newTitle,
                   format:   "jsonp",
                   callback: "processLibrivoxResponse"
                 };
