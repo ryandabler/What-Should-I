@@ -64,6 +64,11 @@ body {
   background-color: var(--color-pop2);
 }
 
+.keyboard:active, .keyboard:focus {
+  border-width: 2px;
+  outline: none;
+}
+
 #result-type {
   font-size: 50px;
   border: none;
@@ -88,6 +93,22 @@ body {
 
 .content-input:focus {
   outline: 1px solid var(--color-pop);
+}
+
+#loading-results-container {
+  text-align: center;
+}
+
+#cog {
+  display: block;
+  margin: 0 auto;
+}
+
+#result-name {
+  font-size: 80px;
+  color: var(--color-pop);
+  margin-top: 40px;
+  text-align: center;
 }
 
 #results {
@@ -147,10 +168,30 @@ body {
   overflow: hidden;
 }
 
+.review .review-author {
+  margin-bottom: 3px;
+  color: var(--color-pop);
+}
+
+.review .review-author a {
+  color: inherit;
+}
+
+.review .review-content {
+  margin-top: 0;
+}
+
 @media only screen and (min-width: 640px) {
   #content-wrapper {
     width: 39vw;
     vertical-align: top;
+  }
+  
+  #content-wrapper > div {
+    max-height: calc(70vh - 40px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-bottom: auto;
   }
   
   .splash-content {
@@ -161,18 +202,19 @@ body {
     display: inline;
   }
   
-  #content-wrapper > div {
-    max-height: calc(70vh - 40px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    margin-bottom: auto;
-  }
-  
   .wrapper-sec {
     display: inline-block;
   }
   
   .wrapper-sec:not(:last-child) {
     padding-right: 10px;
+  }
+  
+  #cog {
+    display: inline-block;
+  }
+  
+  #banner-img {
+    max-width: 39vw;
   }
 }
