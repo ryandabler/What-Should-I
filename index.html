@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta charset="utf-8">
     <meta name="description" content="Get a custom recommendation for a book, band, or movie based on your personal favorites">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="main.css">
@@ -8,8 +9,8 @@
   </head>
     
   <body>
-    <main role="main">
-      <section id="splash-page" class="splash" aria-live="aggressive">
+    <main role="main" aria-live="polite">
+      <section id="splash-page" class="splash" aria-live="polite">
         <div class="splash-content large-text">
           <span class="responsive">What</span>
           <span class="responsive">should</span>
@@ -24,7 +25,7 @@
         <p class="bottom hidden user-msg">Press <span class="keyboard" tabindex="0">Enter</span>!</p>
       </section>
       
-      <section id="get-favorite-book" class="splash hidden">
+      <section id="get-favorite-book" class="splash hidden" aria-live="polite">
         <div class="splash-content large-text">
           <span class="responsive">My</span>
           <span class="responsive">favorite</span>
@@ -35,7 +36,7 @@
         <p class="bottom hidden user-msg">Press <span class="keyboard" tabindex="0">Enter</span>!</p>
       </section>
       
-      <section id="get-favorite-band" class="splash hidden">
+      <section id="get-favorite-band" class="splash hidden" aria-live="polite">
         <div class="splash-content large-text">
           <span class="responsive">My</span>
           <span class="responsive">favorite</span>
@@ -46,7 +47,7 @@
         <p class="bottom hidden user-msg">Press <span class="keyboard" tabindex="0">Enter</span>!</p>
       </section>
       
-      <section id="get-favorite-movie" class="splash hidden">
+      <section id="get-favorite-movie" class="splash hidden" aria-live="polite">
         <div class="splash-content large-text">
           <span class="responsive">My</span>
           <span class="responsive">favorite</span>
@@ -57,7 +58,7 @@
         <p class="bottom hidden user-msg">Press <span class="keyboard" tabindex="0">Enter</span>!</p>
       </section>
       
-      <section id="loading-results" class="splash hidden">
+      <section id="loading-results" class="splash hidden" aria-live="polite">
         <div id="loading-results-container" class="splash-content large-text">
           <i id="cog" class="fa fa-cog fa-spin fa-fw" aria-hidden="true"></i> You should <span id="result-type-txt"></span>...
           <div id="result-name"></div>
