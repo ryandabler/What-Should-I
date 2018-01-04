@@ -100,7 +100,7 @@ function generateBookResultHTML(returnObj) {
   menu.push("info");
   
   // Generate reviews
-  if (bookInfoPath.critic_reviews) {
+  if (bookInfoPath.critic_reviews && bookInfoPath.critic_reviews.length > 0) {
     generateReviewSection($reviewDiv);
   
     $reviewDiv.attr("id", "result-reviews");
@@ -147,12 +147,15 @@ function extractInfo(infoPath, infoNameArr) {
   for (let n = 0; n < infoNameArr.length; n++) {
     let infoName = infoNameArr[n];
     
-    // infoPath[infoName] could be an array of values
-    // if so, we don't want to put it into another array
-    if (infoPath[infoName] instanceof Array) {
-      infoObj[infoName] = infoPath[infoName];
-    } else {
-      infoObj[infoName] = [ infoPath[infoName] ];
+    // Make sure infoName is even in the infoPath, else skip
+    if (infoPath.hasOwnProperty(infoName) && infoPath[infoName]) {
+      // infoPath[infoName] could be an array of values
+      // if so, we don't want to put it into another array
+      if (infoPath[infoName] instanceof Array) {
+        infoObj[infoName] = infoPath[infoName];
+      } else {
+        infoObj[infoName] = [ infoPath[infoName] ];
+      }
     }
   }
   
