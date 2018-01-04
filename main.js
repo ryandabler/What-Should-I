@@ -585,11 +585,19 @@ function switchDisplayDiv(event) {
   $(divIdToDisplay).removeClass("hidden");
 }
 
+function displayUserMessage(event) {
+  let $userMsg = $("section:not(.hidden) .user-msg");
+  $userMsg.removeClass("hidden");
+}
+
 function addEventListeners() {
   $("#result-type")       .change  (scrollToNextSection);
-  $("#favorite-book-txt") .keypress(inputEventHandler);
-  $("#favorite-band-txt") .keypress(inputEventHandler);
-  $("#favorite-movie-txt").keypress(inputEventHandler);
+  $("#get-favorite-book") .keypress(inputEventHandler);
+  $("#favorite-book-txt") .keypress(displayUserMessage);
+  $("#get-favorite-band") .keypress(inputEventHandler);
+  $("#favorite-band-txt") .keypress(displayUserMessage);
+  $("#get-favorite-movie").keypress(inputEventHandler);
+  $("#favorite-movie-txt") .keypress(displayUserMessage);
   $("#results-menu")      .on      ("click", "li", switchDisplayDiv);
 }
 

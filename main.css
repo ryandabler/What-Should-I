@@ -5,6 +5,7 @@
   --color-dark: #36393B;
   --color-light: #EFF8E2;
   --color-pop: #F9EFC1;
+  --color-pop2: #D0CDA736;
   --color-link: #AD8A64;
 }
 
@@ -39,6 +40,28 @@ body {
 
 .hidden {
   display: none;
+}
+
+.bottom {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0;
+}
+
+.user-msg {
+  color: var(--color-pop);
+  font-style: italic;
+}
+
+.keyboard {
+  display: inline-block;
+  border: 1px solid var(--color-pop);
+  border-radius: 3px;
+  padding: .1em .6em;
+  margin: 0 .1em;
+  background-color: var(--color-pop2);
 }
 
 #result-type {
