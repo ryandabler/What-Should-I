@@ -96,7 +96,7 @@ function generateBookResultHTML(returnObj) {
   returnObj.contentWrapper.divs = [];
   
   // Create main info section
-  let infoFields = ["title", "author", "description"],
+  let infoFields = ["title", "sub_title", "author", "description"],
       bookInfo   = extractInfo(bookInfoPath, infoFields);
   generateInfoHTML($infoDiv, bookInfo);
   
