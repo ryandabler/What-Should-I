@@ -608,7 +608,7 @@ function addEventListeners() {
   $("#get-favorite-band") .keypress(inputEventHandler);
   $("#favorite-band-txt") .keypress(displayUserMessage);
   $("#get-favorite-movie").keypress(inputEventHandler);
-  $("#favorite-movie-txt") .keypress(displayUserMessage);
+  $("#favorite-movie-txt").keypress(displayUserMessage);
   $("#results-menu")      .on      ("click", "li", switchDisplayDiv);
 }
 
