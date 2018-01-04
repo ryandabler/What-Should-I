@@ -602,7 +602,8 @@ function displayUserMessage(event = null) {
 }
 
 function addEventListeners() {
-  $("#result-type")       .change  (scrollToNextSection);
+  $("#result-type")       .change  (displayUserMessage);
+  $("#splash-page")       .keypress(inputEventHandler);
   $("#get-favorite-book") .keypress(inputEventHandler);
   $("#favorite-book-txt") .keypress(displayUserMessage);
   $("#get-favorite-band") .keypress(inputEventHandler);
