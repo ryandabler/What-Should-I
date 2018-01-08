@@ -348,22 +348,21 @@ function getInformationFromGoogle(bookTitle) {
 }
 
 function processBookPromises(data) {
-  const [ iDreamBooksData ] = data;
-  let dataObj = { author:    iDreamBooksData.book.author,
-                  genre:     iDreamBooksData.book.genre,
-                  sub_title: iDreamBooksData.book.sub_title,
-                  title:     iDreamBooksData.book.title,
-                  pages:     iDreamBooksData.book.pages,
-                  critic_reviews: []
-                };
-  
-  iDreamBooksData.book.critic_reviews.forEach(elem => dataObj.critic_reviews.push(
-    {
-      url:     elem.review_link,
-      author:  elem.source,
-      content: elem.snippet,
-      date:    elem.review_date,
-      stars:   elem.star_rating
+  const [ iDreamBooksData ] = data,
+        dataObj = { author:    iDreamBooksData.book.author,
+                    genre:     iDreamBooksData.book.genre,
+                    sub_title: iDreamBooksData.book.sub_title,
+                    title:     iDreamBooksData.book.title,
+                    pages:     iDreamBooksData.book.pages
+                  };
+                
+  dataObj.critic_reviews = iDreamBooksData.book.critic_reviews.map(elem =>
+  ({
+    url:     elem.review_link,
+    author:  elem.source,
+    content: elem.snippet,
+    date:    elem.review_date,
+    stars:   elem.star_rating
   }));
   
   Object.assign(APP_STATE.resultMetadata.book, dataObj);
@@ -372,7 +371,7 @@ function processBookPromises(data) {
 }
 
 async function getBookMetadata(bookTitle) {
-  const googleResponse = await getInformationFromGoogle(bookTitle);
+  const googleResponse          = await getInformationFromGoogle(bookTitle);
   APP_STATE.resultMetadata.book = googleResponse.items[0].volumeInfo;
     
   const isbn = APP_STATE.resultMetadata.book.industryIdentifiers[0].identifier;
