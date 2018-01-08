@@ -446,20 +446,18 @@ function getArtistMetadata(artistName) {
   getArtistInformationFromMusicGraph(artistName);
 }
 
-function processMovieInformation(response) {
-  Object.assign(APP_STATE.resultMetadata.movie, response);
+function processMoviePromises(data) {
+  const [ movieDbData ] = data;
+  Object.assign(APP_STATE.resultMetadata.movie, movieDbData);
   
-  // Pre-process some elements of the response to set up for easier HTML generation
-  APP_STATE.resultMetadata.movie.cast   = [];
-  APP_STATE.resultMetadata.movie.genres = [];
+  // Pre-process some elements of the movieDbData to set up for easier HTML generation
+  let cast   = movieDbData.credits.cast.filter( (elem, idx) => idx < 4),
+      crew   = movieDbData.credits.crew.filter(elem => elem.job.search(/^Director$|^Screenplay$|^Producer$/i) > -1),
+      genres = movieDbData.genres;
   
-  let cast   = response.credits.cast.filter( (elem, idx) => idx < 4),
-      crew   = response.credits.crew.filter(elem => elem.job.search(/^Director$|^Screenplay$|^Producer$/i) > -1),
-      genres = response.genres;
-      
-  cast.forEach(castMember => APP_STATE.resultMetadata.movie.cast.push(castMember.name));
+  APP_STATE.resultMetadata.movie.cast   = cast.map(elem => elem.name);
+  APP_STATE.resultMetadata.movie.genres = genres.map(elem => elem.name);
   crew.forEach(crewMember => APP_STATE.resultMetadata.movie[crewMember.job.toLowerCase()] = crewMember.name);
-  genres.forEach(genre => APP_STATE.resultMetadata.movie.genres.push(genre.name));
   
   renderResultToDOM();
 }
@@ -469,17 +467,10 @@ function getMovieInformation(movieId) {
                 append_to_response: "videos,images,reviews,credits"
               };
           
-  queryAPI( THEMOVIEDB_MOVIE_API_ENDPOINT + movieId,
-           "json",
-            query,
-            processMovieInformation,
-            function(xhr, status) {console.log(xhr, status);}
-          );
-}
-
-function processTheMovieDbSearchResponse(response) {
-  APP_STATE.resultMetadata.movie = response.results[0];
-  getMovieInformation(APP_STATE.resultMetadata.movie.id);
+  return queryAPI( THEMOVIEDB_MOVIE_API_ENDPOINT + movieId,
+                  "json",
+                   query
+                 );
 }
 
 function getInformationFromTheMovieDb(movieTitle) {
@@ -487,16 +478,21 @@ function getInformationFromTheMovieDb(movieTitle) {
                 query:   movieTitle
               };
   
-  queryAPI( THEMOVIEDB_SEARCH_API_ENDPOINT,
-           "json",
-            query,
-            processTheMovieDbSearchResponse,
-            function(xhr, status) {console.log(xhr, status);}
-          );
+  return queryAPI( THEMOVIEDB_SEARCH_API_ENDPOINT,
+                  "json",
+                   query
+                 );
 }
 
-function getMovieMetadata(movieTitle) {
-  getInformationFromTheMovieDb(movieTitle);
+async function getMovieMetadata(movieTitle) {
+  const theMovieDbResponse       = await getInformationFromTheMovieDb(movieTitle);
+  APP_STATE.resultMetadata.movie = theMovieDbResponse.results[0];
+    
+  const movieId = APP_STATE.resultMetadata.movie.id;
+  
+  Promise.all([
+    getMovieInformation(movieId),
+  ]).then(processMoviePromises);
 }
 
 function processTasteDiveResponse(response) {
