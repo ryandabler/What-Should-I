@@ -321,52 +321,15 @@ function renderResultToDOM() {
   markLoadingAsComplete();
 }
 
-}
-
-  
-}
-
-function processIDreamBooksResponse(response) {
-  let responseObj = { author:    response.book.author,
-                      genre:     response.book.genre,
-                      sub_title: response.book.sub_title,
-                      title:     response.book.title,
-                      pages:     response.book.pages,
-                      critic_reviews: []
-  };
-  
-  response.book.critic_reviews.forEach(elem => responseObj.critic_reviews.push(
-    {
-      url:     elem.review_link,
-      author:  elem.source,
-      content: elem.snippet,
-      date:    elem.review_date,
-      stars:   elem.star_rating
-  }));
-  
-  Object.assign(APP_STATE.resultMetadata.book, responseObj);
-  
-  renderResultToDOM();
-}
-
 function getInformationFromIDreamBooks(isbn) {
-  let queryParams = { q: isbn,
+  let queryParams = { q:   isbn,
                       key: IDREAMBOOKS_KEY
                     };
                     
-  queryAPI( IDREAMBOOKS_API_ENDPOINT,
-           "json",
-            queryParams,
-            processIDreamBooksResponse,
-            function(xhr, status) {console.log("error",xhr, status);}
-          );
-}
-
-function processGoogleResponse(response) {
-  APP_STATE.resultMetadata.book = response.items[0].volumeInfo
-  
-  let isbn = APP_STATE.resultMetadata.book.industryIdentifiers[0].identifier;
-  getInformationFromIDreamBooks(isbn);
+  return queryAPI( IDREAMBOOKS_API_ENDPOINT,
+                  "json",
+                   queryParams
+                 );
 }
 
 function getInformationFromGoogle(bookTitle) {
@@ -376,16 +339,45 @@ function getInformationFromGoogle(bookTitle) {
                 fields:    "items(volumeInfo/title,volumeInfo/authors,volumeInfo/previewLink,volumeInfo/imageLinks,volumeInfo/description,volumeInfo/industryIdentifiers)"
               };
   
-  queryAPI( GOOGLE_BOOKS_API_ENDPOINT,
-           "json",
-            query,
-            processGoogleResponse,
-            function(xhr, status) {console.log(xhr, status);}
-          );
+  return queryAPI( GOOGLE_BOOKS_API_ENDPOINT,
+                  "json",
+                   query
+                 );
 }
 
-function getBookMetadata(bookTitle) {
-  getInformationFromGoogle(bookTitle);
+function processBookPromises(data) {
+  const [ iDreamBooksData ] = data;
+  let dataObj = { author:    iDreamBooksData.book.author,
+                  genre:     iDreamBooksData.book.genre,
+                  sub_title: iDreamBooksData.book.sub_title,
+                  title:     iDreamBooksData.book.title,
+                  pages:     iDreamBooksData.book.pages,
+                  critic_reviews: []
+                };
+  
+  iDreamBooksData.book.critic_reviews.forEach(elem => dataObj.critic_reviews.push(
+    {
+      url:     elem.review_link,
+      author:  elem.source,
+      content: elem.snippet,
+      date:    elem.review_date,
+      stars:   elem.star_rating
+  }));
+  
+  Object.assign(APP_STATE.resultMetadata.book, dataObj);
+  
+  renderResultToDOM();
+}
+
+async function getBookMetadata(bookTitle) {
+  const googleResponse = await getInformationFromGoogle(bookTitle);
+  APP_STATE.resultMetadata.book = googleResponse.items[0].volumeInfo;
+    
+  const isbn = APP_STATE.resultMetadata.book.industryIdentifiers[0].identifier;
+  
+  Promise.all([
+    getInformationFromIDreamBooks(isbn),
+  ]).then(processBookPromises);
 }
 
 function processLastFmResponse(response) {
@@ -521,20 +513,18 @@ function processTasteDiveResponse(response) {
   }
 }
 
-function queryAPI(endpointURL, dataType, queryObj, successCallback, errorCallback, header = null) {
+function queryAPI(endpointURL, dataType, queryObj, header = null) {
   let ajaxRequestObject = {url:       endpointURL,
-                           dataType:  dataType,
-                           method:   "GET",
-                           data:      queryObj,
-                           success:   successCallback,
-                           error:     errorCallback
+                          dataType:  dataType,
+                          method:   "GET",
+                          data:      queryObj
                           };
   
   if (header !== null) {
     ajaxRequestObject.headers = header;
   }
   
-  $.ajax(ajaxRequestObject);
+  return $.ajax(ajaxRequestObject);
 }
 
 function getRecommendationFromTasteDive() {
@@ -543,17 +533,16 @@ function getRecommendationFromTasteDive() {
         favBand    = $("#favorite-band-txt").val(),
         favMovie   = $("#favorite-movie-txt").val(),
         query      = { q:        `book:${favBook},music:${favBand},movie:${favMovie}`,
-                       type:      APP_STATE.resultType,
-                       k:         TASTEDIVE_KEY,
-                       callback: "dummyCallback"
-                     };
+                      type:      APP_STATE.resultType,
+                      k:         TASTEDIVE_KEY,
+                      callback: "dummyCallback"
+                    };
   
   queryAPI( TASTEDIVE_API_ENDPOINT,
            "jsonp",
-            query,
-            processTasteDiveResponse,
-            function(xhr, status) {console.log("errorrrrr", xhr, status)}
-          );
+            query
+          )
+    .then(processTasteDiveResponse);
 }
 
 function switchDisplayDiv(event) {
