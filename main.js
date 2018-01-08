@@ -223,7 +223,7 @@ function generateMenu(menuItemsArr) {
     $li = $("<li>");
     $li.text(menuItemsArr[n]);
     $li.addClass("menu-item");
-    
+    $li.attr("tabindex", 0);
     liItems.push($li);
   }
   
