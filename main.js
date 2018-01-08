@@ -1,6 +1,5 @@
 const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
       GOOGLE_BOOKS_API_ENDPOINT      = "https://www.googleapis.com/books/v1/volumes",
-      LIBRIVOX_API_ENDPOINT          = "https://librivox.org/api/feed/audiobooks/",
       IDREAMBOOKS_API_ENDPOINT       = "http://idreambooks.com/api/books/reviews.json",
       MUSICGRAPH_API_ENDPOINT        = "http://api.musicgraph.com/api/v2/artist/",
       LAST_FM_API_ENDPOINT           = "http://ws.audioscrobbler.com/2.0/";
@@ -11,8 +10,7 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
                     resultType:     null,
                     results:        [],
                     sidebarItems:   [],
-                    resultMetadata: { librivox:    null,
-                                      book:        { },
+                    resultMetadata: { book:        { },
                                       music:       { },
                                       movie:       { }
                                     }
@@ -323,32 +321,9 @@ function renderResultToDOM() {
   markLoadingAsComplete();
 }
 
-function stripArticleFromTitle(title) {
-  return title.replace(/^The |^An? /, "");
 }
 
-function processLibrivoxResponse(response) {
-  if (response.hasOwnProperty("error")) {
-    APP_STATE.resultMetadata.librivox = "error";
-  } else {
-    APP_STATE.resultMetadata.librivox = response.books[0];
-    console.log(APP_STATE.resultMetadata.librivox);
-  }
-}
-
-function getInformationFromLibrivox(title) {
-  let newTitle = stripArticleFromTitle(title);
-  const query = { title:     newTitle,
-                  format:   "jsonp",
-                  callback: "processLibrivoxResponse"
-                };
   
-  queryAPI( LIBRIVOX_API_ENDPOINT,
-           "jsonp",
-            query,
-            dummyCallback,
-            dummyCallback // Error event always fires after success callback
-          );
 }
 
 function processIDreamBooksResponse(response) {
