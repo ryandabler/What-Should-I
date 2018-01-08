@@ -1,8 +1,10 @@
+'use strict';
+
 const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
       GOOGLE_BOOKS_API_ENDPOINT      = "https://www.googleapis.com/books/v1/volumes",
       IDREAMBOOKS_API_ENDPOINT       = "http://idreambooks.com/api/books/reviews.json",
       MUSICGRAPH_API_ENDPOINT        = "http://api.musicgraph.com/api/v2/artist/",
-      LAST_FM_API_ENDPOINT           = "http://ws.audioscrobbler.com/2.0/";
+      LAST_FM_API_ENDPOINT           = "http://ws.audioscrobbler.com/2.0/",
       THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie",
       THEMOVIEDB_MOVIE_API_ENDPOINT  = "https://api.themoviedb.org/3/movie/",
       MOVIE_POSTER_URL               = "http://image.tmdb.org/t/p/w780",
@@ -322,13 +324,13 @@ function renderResultToDOM() {
 }
 
 function getInformationFromIDreamBooks(isbn) {
-  let queryParams = { q:   isbn,
-                      key: IDREAMBOOKS_KEY
-                    };
+  let query = { q:   isbn,
+                key: IDREAMBOOKS_KEY
+              };
                     
   return queryAPI( IDREAMBOOKS_API_ENDPOINT,
                   "json",
-                   queryParams
+                   query
                  );
 }
 
@@ -452,7 +454,7 @@ function processMovieInformation(response) {
   APP_STATE.resultMetadata.movie.cast   = [];
   APP_STATE.resultMetadata.movie.genres = [];
   
-  let cast   = response.credits.cast.filter( (elem, idx) => idx < 4);
+  let cast   = response.credits.cast.filter( (elem, idx) => idx < 4),
       crew   = response.credits.crew.filter(elem => elem.job.search(/^Director$|^Screenplay$|^Producer$/i) > -1),
       genres = response.genres;
       
