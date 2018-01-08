@@ -381,9 +381,11 @@ async function getBookMetadata(bookTitle) {
   ]).then(processBookPromises);
 }
 
-function processLastFmResponse(response) {
-  Object.assign(APP_STATE.resultMetadata.music, response.artist);
-  APP_STATE.resultMetadata.music.bio = APP_STATE.resultMetadata.music.bio.content;
+function processMusicPromises(data) {
+  const [ albumData, lastFMData ] = data;
+  
+  APP_STATE.resultMetadata.music.albums = albumData;
+  Object.assign(APP_STATE.resultMetadata.music, lastFMData.artist);
   
   renderResultToDOM();
 }
@@ -395,18 +397,10 @@ function getArtistInformationFromLastFm(artistName) {
                 format: "json"
               };
   
-  queryAPI( LAST_FM_API_ENDPOINT,
-           "json",
-            query,
-            processLastFmResponse,
-            function(xhr, status) {console.log(xhr, status);}
-          );
-}
-
-function processMusicGraphAlbumResponse(response) {
-  APP_STATE.resultMetadata.music.albums = response.data;
-  
-  getArtistInformationFromLastFm(APP_STATE.results[0]);
+  return queryAPI( LAST_FM_API_ENDPOINT,
+                  "json",
+                   query
+                 );
 }
 
 function getArtistAlbums(artistId) {
@@ -414,18 +408,10 @@ function getArtistAlbums(artistId) {
                 id:      artistId
               };
           
-  queryAPI( MUSICGRAPH_API_ENDPOINT + artistId + "/albums",
-           "json",
-            query,
-            processMusicGraphAlbumResponse,
-            function(xhr, status) {console.log(xhr, status);}
-          );
-}
-
-function processMusicGraphArtistResponse(response) {
-  Object.assign(APP_STATE.resultMetadata.music, response.data[0]);
-  
-  getArtistAlbums(APP_STATE.resultMetadata.music.id);
+  return queryAPI( MUSICGRAPH_API_ENDPOINT + artistId + "/albums",
+                  "json",
+                   query
+                 );
 }
 
 function getArtistInformationFromMusicGraph(artistName) {
@@ -434,16 +420,34 @@ function getArtistInformationFromMusicGraph(artistName) {
                 limit:   1
               };
           
-  queryAPI( MUSICGRAPH_API_ENDPOINT + "search",
-           "json",
-            query,
-            processMusicGraphArtistResponse,
-            function(xhr, status) {console.log(xhr, status);}
-           );
+  return queryAPI( MUSICGRAPH_API_ENDPOINT + "search",
+                  "json",
+                   query
+                 );
 }
 
-function getArtistMetadata(artistName) {
-  getArtistInformationFromMusicGraph(artistName);
+async function getArtistMetadata(artistName) {
+  const musicGraphResponse       = await getArtistInformationFromMusicGraph(artistName).catch(processError);
+  
+  if (musicGraphResponse) {
+    APP_STATE.resultMetadata.music = musicGraphResponse.data[0];
+      
+    const artistId = APP_STATE.resultMetadata.music.id;
+    
+    Promise.all([
+      getArtistAlbums(artistId),
+      getArtistInformationFromLastFm(artistName)
+    ])
+      .then(processMusicPromises)
+      .catch(processError);
+  }
+}
+
+function processError(error) {
+  markLoadingAsComplete();
+  console.log(error);
+  $("#results-wrapper").html(`<p class="large-text">Oops! We had a problem generating your ${APP_STATE.resultType} recommendation.</p>
+  <p>The technical details are: ${error.responseText}</p>`);
 }
 
 function processMoviePromises(data) {
