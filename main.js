@@ -378,7 +378,9 @@ async function getBookMetadata(bookTitle) {
   
   Promise.all([
     getInformationFromIDreamBooks(isbn),
-  ]).then(processBookPromises);
+  ])
+    .then(processBookPromises)
+    .catch(processError);
 }
 
 function processMusicPromises(data) {
@@ -496,7 +498,9 @@ async function getMovieMetadata(movieTitle) {
   
   Promise.all([
     getMovieInformation(movieId),
-  ]).then(processMoviePromises);
+  ])
+    .then(processMoviePromises)
+    .catch(processError);
 }
 
 function processTasteDiveResponse(response) {
