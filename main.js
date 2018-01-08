@@ -447,7 +447,7 @@ async function getArtistMetadata(artistName) {
 
 function processError(error) {
   markLoadingAsComplete();
-  console.log(error);
+  
   $("#results-wrapper").html(`<p class="large-text">Oops! We had a problem generating your ${APP_STATE.resultType} recommendation.</p>
   <p>The technical details are: ${error.responseText}</p>`);
 }
