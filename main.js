@@ -56,7 +56,7 @@ function generateReviewHTML(review) {
       $author  = $("<h1>"),
       $content = $("<p>");
   
-  $author.html(`<a href=${review.url}>${review.author}</a>`);
+  $author.html(`<a href=${review.url} target="_blank">${review.author}</a>`);
   $author.addClass("review-author");
   $content.text(review.content);
   $content.addClass("review-content");
