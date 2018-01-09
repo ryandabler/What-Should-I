@@ -541,18 +541,22 @@ function getRecommendationFromTasteDive() {
 }
 
 function switchDisplayDiv(event) {
-  const $menuItemToActivate = $(event.target),
-        $activeMenuItem     = $("#results-menu").find(".menu-item-active"),
-        divIdDisplayed      = `#result-${$activeMenuItem.html()}`,
-        divIdToDisplay      = `#result-${$menuItemToActivate.html()}`;
-      
-  // Switch which menu item is active
-  $activeMenuItem.removeClass("menu-item-active");
-  $menuItemToActivate.addClass("menu-item-active");
-  
-  // Switch which div is displayed
-  $(divIdDisplayed).addClass("hidden");
-  $(divIdToDisplay).removeClass("hidden");
+  if (event.key === "Enter" || event.type === "click") {
+    const $menuItemToActivate = $(event.target),
+          $activeMenuItem     = $("#results-menu").find(".menu-item-active"),
+          divIdDisplayed      = `#result-${$activeMenuItem.html()}`,
+          divIdToDisplay      = `#result-${$menuItemToActivate.html()}`;
+        
+    // Switch which menu item is active
+    $activeMenuItem.removeClass("menu-item-active")
+                   .attr("aria-pressed", "false");
+    $menuItemToActivate.addClass("menu-item-active")
+                       .attr("aria-pressed", "true");
+    
+    // Switch which div is displayed
+    $(divIdDisplayed).addClass("hidden");
+    $(divIdToDisplay).removeClass("hidden");
+  }
 }
 
 function displayUserMessage(event = null) {
@@ -570,6 +574,7 @@ function addEventListeners() {
   $("#get-favorite-movie").keypress(inputEventHandler);
   $("#favorite-movie-txt").keypress(displayUserMessage);
   $("#results-menu")      .on      ("click", "li", switchDisplayDiv);
+  $("#results-menu")      .on      ("keypress", "li", switchDisplayDiv);
 }
 
 function initApp() {
