@@ -137,10 +137,9 @@ function generateAlbumsSection($albumsSec) {
 
 function extractInfo(infoPath, infoNameArr) {
   const infoObj = {};
-  for (let n = 0; n < infoNameArr.length; n++) {
-    let infoName = infoNameArr[n];
-    
-    // Make sure infoName is even in the infoPath, else skip
+  
+  infoNameArr.forEach(infoName => {
+    // Make sure infoName is in the infoPath and not null/undefined, else skip
     if (infoPath.hasOwnProperty(infoName) && infoPath[infoName]) {
       // infoPath[infoName] could be an array of values
       // if so, we don't want to put it into another array
@@ -150,7 +149,7 @@ function extractInfo(infoPath, infoNameArr) {
         infoObj[infoName] = [ infoPath[infoName] ];
       }
     }
-  }
+  });
   
   return infoObj;
 }
@@ -206,27 +205,25 @@ function extractMovieReviews(movieInfoPath) {
 }
 
 function generateMenu(menuItemsArr) {
-  const liItems = [],
-        $li;
-  for (let n = 0; n < menuItemsArr.length; n++) {
+  let   $li;
+  const liItems = menuItemsArr.map(menuItem => {
     $li = $("<li>");
-    $li.text(menuItemsArr[n]);
+    $li.text(menuItem);
     $li.addClass("menu-item");
     $li.attr("tabindex", 0);
-    liItems.push($li);
-  }
+  });
   
   return liItems;
 }
 
 function generateMovieResultHTML(returnObj) {
-  let $infoDiv      = $("<div>"),
-      $trailerDiv   = $("<div>"),
-      $reviewsDiv   = $("<div>"),
-      $moreDiv      = $("<div>"),
-      menu          = [], // Will be used to generate <li> navigational elements
-      movieInfoPath = APP_STATE.resultMetadata.movie,
-      movieName     = APP_STATE.results[0];
+  const $infoDiv      = $("<div>"),
+        $trailerDiv   = $("<div>"),
+        $reviewsDiv   = $("<div>"),
+        $moreDiv      = $("<div>"),
+        menu          = [], // Will be used to generate <li> navigational elements
+        movieInfoPath = APP_STATE.resultMetadata.movie,
+        movieName     = APP_STATE.results[0];
   
   // Set $image values
   returnObj.bannerImg.src = MOVIE_POSTER_URL + movieInfoPath.poster_path;
@@ -235,8 +232,8 @@ function generateMovieResultHTML(returnObj) {
   // Gather important data about movie and assemble into $infoDiv
   returnObj.contentWrapper.divs = [];
   
-  let infoFields = ["cast", "producer", "director", "screenplay", "overview", "genres", "release_date"];
-  let movieInfo = extractInfo(movieInfoPath, infoFields);
+  const infoFields = ["cast", "producer", "director", "screenplay", "overview", "genres", "release_date"],
+        movieInfo = extractInfo(movieInfoPath, infoFields);
   generateInfoHTML($infoDiv, movieInfo);
   
   $infoDiv.attr("id", "result-info");
@@ -244,9 +241,9 @@ function generateMovieResultHTML(returnObj) {
   menu.push("info");
   
   // Create trailer div
-  let trailers = movieInfoPath.videos.results.filter(elem => elem.name.search(/trailer/i) > -1);
+  const trailers = movieInfoPath.videos.results.filter(elem => elem.name.search(/trailer/i) > -1);
   if (trailers.length > 0) {
-    let youtubeId = trailers[0].key;
+    const youtubeId = trailers[0].key;
     $trailerDiv.html(`<iframe id="ytplayer" type="text/html" width="640" height="360" src="https://www.youtube.com/embed/${youtubeId}?rel=0&showinfo=0" frameborder="0"></iframe>`);
     
     // Push trailer to the navigational menu
