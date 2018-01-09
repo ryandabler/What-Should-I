@@ -25,6 +25,7 @@ function scrollToNextSection() {
   
   $currentSec.toggleClass("hidden");
   $nextSec   .toggleClass("hidden");
+  $(document).off("keypress");
   
   // Toggle focus on input if there is one
   if ($nextInput.length > 0) {
@@ -38,7 +39,9 @@ function generateLoadingHTML() {
 }
 
 function inputEventHandler(event) {
-  if (event.key === "Enter") {
+  const documentHasEventListener = $._data(document, "events") !== undefined;
+  
+  if ((event.key === "Enter" && documentHasEventListener) || event.type === "click") {
     // If last input section, query TasteDive
     if (event.target.id === "favorite-movie-txt") {
       getRecommendationFromTasteDive();
@@ -560,18 +563,26 @@ function switchDisplayDiv(event) {
 }
 
 function displayUserMessage(event = null) {
-  const $userMsg = $("section:not(.hidden) .user-msg");
-  $userMsg.removeClass("hidden");
+  if (event && event.key !== "Enter") {
+    const $userMsg = $("section:not(.hidden) .user-msg");
+    $userMsg.removeClass("hidden");
+    
+    //Remove old event listener on event.target and replace
+    $(event.target).off();
+    $(event.target).keypress(inputEventHandler);
+    $(document).keypress(inputEventHandler);
+  } else if (event === null) {
+    const $userMsg = $("section:not(.hidden) .user-msg");
+    $userMsg.removeClass("hidden");
+    $(document).keypress(inputEventHandler);
+  }
 }
 
 function addEventListeners() {
   $("#result-type")       .change  (displayUserMessage);
-  $("#splash-page")       .keypress(inputEventHandler);
-  $("#get-favorite-book") .keypress(inputEventHandler);
+  $(".user-msg").click(inputEventHandler);
   $("#favorite-book-txt") .keypress(displayUserMessage);
-  $("#get-favorite-band") .keypress(inputEventHandler);
   $("#favorite-band-txt") .keypress(displayUserMessage);
-  $("#get-favorite-movie").keypress(inputEventHandler);
   $("#favorite-movie-txt").keypress(displayUserMessage);
   $("#results-menu")      .on      ("click", "li", switchDisplayDiv);
   $("#results-menu")      .on      ("keypress", "li", switchDisplayDiv);
