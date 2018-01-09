@@ -205,12 +205,15 @@ function extractMovieReviews(movieInfoPath) {
 }
 
 function generateMenu(menuItemsArr) {
-  let   $li;
+  let $li;
   const liItems = menuItemsArr.map(menuItem => {
     $li = $("<li>");
     $li.text(menuItem);
     $li.addClass("menu-item");
     $li.attr("tabindex", 0);
+    $li.attr("role","button");
+    $li.attr("aria-pressed", "false");
+    return $li;
   });
   
   return liItems;
@@ -302,7 +305,8 @@ function renderResultToDOM() {
   
   $contentWrapper.append(htmlObject.contentWrapper.divs);
   
-  htmlObject.resultsMenu[0].addClass("menu-item-active");
+  htmlObject.resultsMenu[0].addClass("menu-item-active")
+                           .attr("aria-pressed", "true");
   $resultsMenu.append(htmlObject.resultsMenu);
   
   // Indicate that loading is over
