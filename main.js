@@ -19,9 +19,9 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
                   };
 
 function scrollToNextSection() {
-  let $currentSec = $("section:not(.hidden)"),
-      $nextSec    = $currentSec.next(),
-      $nextInput  = $nextSec.find("input");
+  const $currentSec = $("section:not(.hidden)"),
+        $nextSec    = $currentSec.next(),
+        $nextInput  = $nextSec.find("input");
   
   $currentSec.toggleClass("hidden");
   $nextSec   .toggleClass("hidden");
@@ -33,7 +33,7 @@ function scrollToNextSection() {
 }
 
 function generateLoadingHTML() {
-  let typeTxt = $("#result-type").find(":selected").attr("data-val");
+  const typeTxt = $("#result-type").find(":selected").attr("data-val");
   $("#result-type-txt").text(typeTxt);
 }
 
@@ -52,9 +52,9 @@ function inputEventHandler(event) {
 function dummyCallback(response) { console.log("dummy"); }
 
 function generateReviewHTML(review) {
-  let $review  = $("<article>"),
-      $author  = $("<h1>"),
-      $content = $("<p>");
+  const $review  = $("<article>"),
+        $author  = $("<h1>"),
+        $content = $("<p>");
   
   $author.html(`<a href=${review.url} target="_blank">${review.author}</a>`);
   $author.addClass("review-author");
@@ -67,19 +67,17 @@ function generateReviewHTML(review) {
 }
 
 function generateReviewSection($reviewDiv) {
-  let reviewsHTML = [];
-      
-  APP_STATE.resultMetadata.book.critic_reviews.forEach(review => reviewsHTML.push(generateReviewHTML(review)));
+  const reviewsHTML = APP_STATE.resultMetadata.book.critic_reviews.map(review => generateReviewHTML(review));
   
   $reviewDiv.append(reviewsHTML);
 }
 
 function generateBookResultHTML(returnObj) {
-  let $infoDiv       = $("<div>"),
-      $reviewDiv     = $("<div>"),
-      menu           = [],
-      book           = APP_STATE.results[0],
-      bookInfoPath   = APP_STATE.resultMetadata.book;
+  const $infoDiv       = $("<div>"),
+        $reviewDiv     = $("<div>"),
+        menu           = [],
+        book           = APP_STATE.results[0],
+        bookInfoPath   = APP_STATE.resultMetadata.book;
   
   // Set image attributes
   returnObj.bannerImg.src = bookInfoPath.imageLinks.thumbnail;
@@ -89,8 +87,8 @@ function generateBookResultHTML(returnObj) {
   returnObj.contentWrapper.divs = [];
   
   // Create main info section
-  let infoFields = ["title", "sub_title", "author", "description"],
-      bookInfo   = extractInfo(bookInfoPath, infoFields);
+  const infoFields = ["title", "sub_title", "author", "description"],
+        bookInfo   = extractInfo(bookInfoPath, infoFields);
   generateInfoHTML($infoDiv, bookInfo);
   
   $infoDiv.attr("id", "result-info");
@@ -114,8 +112,8 @@ function generateBookResultHTML(returnObj) {
 }
 
 function generateAlbumHTML(album) {
-  let $album = $("<li>"),
-      $year  = $("<span>");
+  const $album = $("<li>"),
+        $year  = $("<span>");
   
   $year.addClass("album-year");
   $year.text(album.release_year);
@@ -128,10 +126,8 @@ function generateAlbumHTML(album) {
 }
 
 function generateAlbumsSection($albumsSec) {
-  let albumsHTML = [],
-      $albumList = $("<ul>");
-      
-  APP_STATE.resultMetadata.music.albums.forEach(album => albumsHTML.push(generateAlbumHTML(album)));
+  const albumsHTML = APP_STATE.resultMetadata.music.albums.map(album => generateAlbumHTML(album)),
+        $albumList = $("<ul>");
   
   $albumList.append(albumsHTML);
   
@@ -140,8 +136,7 @@ function generateAlbumsSection($albumsSec) {
 }
 
 function extractInfo(infoPath, infoNameArr) {
-  let infoObj = {};
-  
+  const infoObj = {};
   for (let n = 0; n < infoNameArr.length; n++) {
     let infoName = infoNameArr[n];
     
@@ -170,11 +165,11 @@ function generateInfoHTML($infoDiv, infoObj) {
 }
 
 function generateMusicResultHTML(returnObj) {
-  let $infoDiv       = $("<div>"),
-      $discoDiv      = $("<div>"),
-      menu           = [],
-      artist         = APP_STATE.results[0],
-      artistInfoPath = APP_STATE.resultMetadata.music;
+  const $infoDiv       = $("<div>"),
+        $discoDiv      = $("<div>"),
+        menu           = [],
+        artist         = APP_STATE.results[0],
+        artistInfoPath = APP_STATE.resultMetadata.music;
   
   // Set image
   returnObj.bannerImg.src = artistInfoPath.image[4]["#text"];
@@ -184,8 +179,8 @@ function generateMusicResultHTML(returnObj) {
   returnObj.contentWrapper.divs = [];
   
   // Create main info section
-  let infoFields = ["name", "main_genre", "decade", "country_of_origin", "bio"];
-  let artistInfo = extractInfo(artistInfoPath, infoFields);
+  const infoFields = ["name", "main_genre", "decade", "country_of_origin", "bio"],
+        artistInfo = extractInfo(artistInfoPath, infoFields);
   generateInfoHTML($infoDiv, artistInfo);
   
   $infoDiv.attr("id", "result-info");
@@ -207,18 +202,12 @@ function generateMusicResultHTML(returnObj) {
 }
 
 function extractMovieReviews(movieInfoPath) {
-  let reviews          = movieInfoPath.reviews.results,
-      processedReviews = [];
-      
-  reviews.forEach(review => processedReviews.push(generateReviewHTML(review)));
-  
-  return processedReviews;
+  return movieInfoPath.reviews.results.map(review => generateReviewHTML(review));
 }
 
 function generateMenu(menuItemsArr) {
-  let liItems = [],
-      $li;
-      
+  const liItems = [],
+        $li;
   for (let n = 0; n < menuItemsArr.length; n++) {
     $li = $("<li>");
     $li.text(menuItemsArr[n]);
@@ -268,7 +257,7 @@ function generateMovieResultHTML(returnObj) {
   }
   
   // Create review div
-  let reviews = extractMovieReviews(movieInfoPath);
+  const reviews = extractMovieReviews(movieInfoPath);
   if (reviews.length > 0) {
     $reviewsDiv.append(reviews);
     
@@ -293,10 +282,10 @@ function markLoadingAsComplete() {
 }
 
 function renderResultToDOM() {
-  let htmlObject = { bannerImg:      {},
-                     contentWrapper: {},
-                     resultsMenu:    []
-                   };
+  const htmlObject = { bannerImg:      {},
+                       contentWrapper: {},
+                       resultsMenu:    []
+                     };
   if (APP_STATE.resultType === "books") {
     generateBookResultHTML(htmlObject);
   } else if (APP_STATE.resultType === "music") {
@@ -307,9 +296,9 @@ function renderResultToDOM() {
     
   }
   
-  let $banner         = $("#banner-img"),
-      $contentWrapper = $("#content-wrapper"),
-      $resultsMenu    = $("#results-menu");
+  const $banner         = $("#banner-img"),
+        $contentWrapper = $("#content-wrapper"),
+        $resultsMenu    = $("#results-menu");
       
   $banner.attr("src", htmlObject.bannerImg.src);
   $banner.attr("alt", htmlObject.bannerImg.alt);
@@ -324,9 +313,9 @@ function renderResultToDOM() {
 }
 
 function getInformationFromIDreamBooks(isbn) {
-  let query = { q:   isbn,
-                key: IDREAMBOOKS_KEY
-              };
+  const query = { q:   isbn,
+                  key: IDREAMBOOKS_KEY
+                };
                     
   return queryAPI( IDREAMBOOKS_API_ENDPOINT,
                   "json",
@@ -335,11 +324,11 @@ function getInformationFromIDreamBooks(isbn) {
 }
 
 function getInformationFromGoogle(bookTitle) {
-  let query = { q:          bookTitle,
-                key:        GOOGLE_BOOKS_KEY,
-                maxResults: 1,
-                fields:    "items(volumeInfo/title,volumeInfo/authors,volumeInfo/previewLink,volumeInfo/imageLinks,volumeInfo/description,volumeInfo/industryIdentifiers)"
-              };
+  const query = { q:          bookTitle,
+                  key:        GOOGLE_BOOKS_KEY,
+                  maxResults: 1,
+                  fields:    "items(volumeInfo/title,volumeInfo/authors,volumeInfo/previewLink,volumeInfo/imageLinks,volumeInfo/description,volumeInfo/industryIdentifiers)"
+                };
   
   return queryAPI( GOOGLE_BOOKS_API_ENDPOINT,
                   "json",
@@ -393,11 +382,11 @@ function processMusicPromises(data) {
 }
 
 function getArtistInformationFromLastFm(artistName) {
-  let query = { method: "artist.getinfo",
-                artist:  artistName,
-                api_key: LAST_FM_KEY,
-                format: "json"
-              };
+  const query = { method: "artist.getinfo",
+                  artist:  artistName,
+                  api_key: LAST_FM_KEY,
+                  format: "json"
+                };
   
   return queryAPI( LAST_FM_API_ENDPOINT,
                   "json",
@@ -406,9 +395,9 @@ function getArtistInformationFromLastFm(artistName) {
 }
 
 function getArtistAlbums(artistId) {
-  let query = { api_key: MUSICGRAPH_KEY,
-                id:      artistId
-              };
+  const query = { api_key: MUSICGRAPH_KEY,
+                  id:      artistId
+                };
           
   return queryAPI( MUSICGRAPH_API_ENDPOINT + artistId + "/albums",
                   "json",
@@ -417,10 +406,10 @@ function getArtistAlbums(artistId) {
 }
 
 function getArtistInformationFromMusicGraph(artistName) {
-  let query = { api_key: MUSICGRAPH_KEY,
-                name:    artistName,
-                limit:   1
-              };
+  const query = { api_key: MUSICGRAPH_KEY,
+                  name:    artistName,
+                  limit:   1
+                };
           
   return queryAPI( MUSICGRAPH_API_ENDPOINT + "search",
                   "json",
@@ -457,9 +446,9 @@ function processMoviePromises(data) {
   Object.assign(APP_STATE.resultMetadata.movie, movieDbData);
   
   // Pre-process some elements of the movieDbData to set up for easier HTML generation
-  let cast   = movieDbData.credits.cast.filter( (elem, idx) => idx < 4),
-      crew   = movieDbData.credits.crew.filter(elem => elem.job.search(/^Director$|^Screenplay$|^Producer$/i) > -1),
-      genres = movieDbData.genres;
+  const cast   = movieDbData.credits.cast.filter( (elem, idx) => idx < 4),
+        crew   = movieDbData.credits.crew.filter(elem => elem.job.search(/^Director$|^Screenplay$|^Producer$/i) > -1),
+        genres = movieDbData.genres;
   
   APP_STATE.resultMetadata.movie.cast   = cast.map(elem => elem.name);
   APP_STATE.resultMetadata.movie.genres = genres.map(elem => elem.name);
@@ -469,9 +458,9 @@ function processMoviePromises(data) {
 }
 
 function getMovieInformation(movieId) {
-  let query = { api_key: THEMOVIEDB_KEY,
-                append_to_response: "videos,images,reviews,credits"
-              };
+  const query = { api_key: THEMOVIEDB_KEY,
+                  append_to_response: "videos,images,reviews,credits"
+                };
           
   return queryAPI( THEMOVIEDB_MOVIE_API_ENDPOINT + movieId,
                   "json",
@@ -480,9 +469,9 @@ function getMovieInformation(movieId) {
 }
 
 function getInformationFromTheMovieDb(movieTitle) {
-  let query = { api_key: THEMOVIEDB_KEY,
-                query:   movieTitle
-              };
+  const query = { api_key: THEMOVIEDB_KEY,
+                  query:   movieTitle
+                };
   
   return queryAPI( THEMOVIEDB_SEARCH_API_ENDPOINT,
                   "json",
@@ -519,11 +508,11 @@ function processTasteDiveResponse(response) {
 }
 
 function queryAPI(endpointURL, dataType, queryObj, header = null) {
-  let ajaxRequestObject = {url:       endpointURL,
-                          dataType:  dataType,
-                          method:   "GET",
-                          data:      queryObj
-                          };
+  const ajaxRequestObject = {url:       endpointURL,
+                             dataType:  dataType,
+                             method:   "GET",
+                             data:      queryObj
+                            };
   
   if (header !== null) {
     ajaxRequestObject.headers = header;
@@ -551,10 +540,10 @@ function getRecommendationFromTasteDive() {
 }
 
 function switchDisplayDiv(event) {
-  let $menuItemToActivate = $(event.target),
-      $activeMenuItem     = $("#results-menu").find(".menu-item-active"),
-      divIdDisplayed      = `#result-${$activeMenuItem.html()}`,
-      divIdToDisplay      = `#result-${$menuItemToActivate.html()}`;
+  const $menuItemToActivate = $(event.target),
+        $activeMenuItem     = $("#results-menu").find(".menu-item-active"),
+        divIdDisplayed      = `#result-${$activeMenuItem.html()}`,
+        divIdToDisplay      = `#result-${$menuItemToActivate.html()}`;
       
   // Switch which menu item is active
   $activeMenuItem.removeClass("menu-item-active");
@@ -566,7 +555,7 @@ function switchDisplayDiv(event) {
 }
 
 function displayUserMessage(event = null) {
-  let $userMsg = $("section:not(.hidden) .user-msg");
+  const $userMsg = $("section:not(.hidden) .user-msg");
   $userMsg.removeClass("hidden");
 }
 
