@@ -53,6 +53,8 @@ body {
 .user-msg {
   color: var(--color-pop);
   font-style: italic;
+  text-align: center;
+  width: 100%;
 }
 
 .keyboard {
@@ -115,16 +117,22 @@ body {
   margin: auto;
 }
 
+#results-wrapper {
+  margin-top: 20px;
+}
+
+#img-wrapper {
+  margin-bottom: 10px;
+}
+  
 #banner-img {
-  height: 70vh;
+  height: 60vh;
+  display: block;
+  margin: auto;
 }
 
 .wrapper-sec {
   display: block;
-}
-
-#content-wrapper > div {
-  margin-bottom: 20px;
 }
   
 #results-menu {
@@ -181,9 +189,32 @@ body {
   margin-top: 0;
 }
 
+#reset-btn {
+  display: block;
+  margin: 20px auto 10px auto;
+  width: 40vw;
+  max-width: 200px;
+  cursor: pointer;
+}
+
 @media only screen and (min-width: 640px) {
+  #banner-img {
+    margin: auto;
+    display: block;
+  }
+  
+  .splash-content {
+    width: 70vw;
+  }
+}
+
+@media only screen and (min-width: 800px) {
+  #results-wrapper {
+    margin-top: auto;
+  }
+  
   #content-wrapper {
-    width: 39vw;
+    width: 25vw;
     vertical-align: top;
   }
   
@@ -191,7 +222,7 @@ body {
     max-height: calc(70vh - 40px);
     overflow-y: auto;
     overflow-x: hidden;
-    margin-bottom: auto;
+    margin-bottom: 0;
   }
   
   .splash-content {
@@ -206,7 +237,7 @@ body {
     display: inline-block;
   }
   
-  .wrapper-sec:not(:last-child) {
+  .wrapper-sec:not(:last-of-type) {
     padding-right: 10px;
   }
   
@@ -214,7 +245,12 @@ body {
     display: inline-block;
   }
   
+  #img-wrapper {
+    margin: 0;
+  }
+  
   #banner-img {
     max-width: 39vw;
+    height: 70vh;
   }
 }
