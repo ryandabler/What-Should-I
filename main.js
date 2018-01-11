@@ -281,7 +281,6 @@ function markLoadingAsComplete() {
   $("#result-name").text(APP_STATE.results[0]);
   displayUserMessage();
   $("#loading-results").keypress(inputEventHandler);
-  $("#loading-results p.user-msg span.keyboard").focus();
 }
 
 function renderResultToDOM() {
