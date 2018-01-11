@@ -580,10 +580,10 @@ function displayUserMessage(event = null) {
 
 function resetApp() {
   // Reset APP_STATE
-  APP_STATE.resultType          = null,
-  APP_STATE.results             = [],
-  APP_STATE.sidebarItems        = [],
-  APP_STATE.resultMetadata.book = { },
+  APP_STATE.resultType           = null,
+  APP_STATE.results              = [],
+  APP_STATE.sidebarItems         = [],
+  APP_STATE.resultMetadata.book  = { },
   APP_STATE.resultMetadata.music = { },
   APP_STATE.resultMetadata.movie = { };
   
@@ -611,7 +611,7 @@ function resetApp() {
 
 function addEventListeners() {
   $("#result-type")       .change  (displayUserMessage);
-  $(".user-msg").click(inputEventHandler);
+  $(".user-msg")          .click   (inputEventHandler);
   $("#favorite-book-txt") .keypress(displayUserMessage);
   $("#favorite-band-txt") .keypress(displayUserMessage);
   $("#favorite-movie-txt").keypress(displayUserMessage);
