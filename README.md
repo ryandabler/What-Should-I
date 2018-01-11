@@ -11,13 +11,13 @@ This project is built using jQuery to handle the AJAX and DOM manipulation as we
 ## Screenshots
 
 First page
-![Splash screen](screenshots/Splash.png)
+![Splash screen](Screenshots/Splash.png)
 
 User input page
-![User input screen](screenshots/User input.png)
+![User input screen](Screenshots/User input.png)
 
 Loading page
-![Loading screen](screenshots/Loading screen.png)
+![Loading screen](Screenshots/Loading screen.png)
 
 Result page
-![Result screen](screenshots/Results screen.png)
+![Result screen](Screenshots/Results screen.png)
