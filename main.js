@@ -578,6 +578,37 @@ function displayUserMessage(event = null) {
   }
 }
 
+function resetApp() {
+  // Reset APP_STATE
+  APP_STATE.resultType          = null,
+  APP_STATE.results             = [],
+  APP_STATE.sidebarItems        = [],
+  APP_STATE.resultMetadata.book = { },
+  APP_STATE.resultMetadata.music = { },
+  APP_STATE.resultMetadata.movie = { };
+  
+  // Reset #result-name
+  $("#result-name").empty();
+  
+  // Reset all inputs
+  $("#result-type").val("_");
+  $("input").val("");
+  
+  // Reset all event listeners
+  $("*").off();
+  addEventListeners();
+  
+  // Hide user messages
+  $("p.user-msg").addClass("hidden");
+  
+  // Switch to beginning
+  const $currentSec = $("section:not(.hidden)"),
+        $firstSec   = $("#splash-page");
+  
+  $currentSec.addClass("hidden");
+  $firstSec.removeClass("hidden");
+}
+
 function addEventListeners() {
   $("#result-type")       .change  (displayUserMessage);
   $(".user-msg").click(inputEventHandler);
@@ -586,6 +617,7 @@ function addEventListeners() {
   $("#favorite-movie-txt").keypress(displayUserMessage);
   $("#results-menu")      .on      ("click", "li", switchDisplayDiv);
   $("#results-menu")      .on      ("keypress", "li", switchDisplayDiv);
+  $("#reset-btn")         .click   (resetApp);
 }
 
 function initApp() {
