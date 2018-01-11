@@ -14,7 +14,7 @@ First page
 ![Splash screen](Screenshots/Splash.png)
 
 User input page
-![User input screen](Screenshots/User input.png)
+![User input screen](Screenshots/User_input.png)
 
 Loading page
 ![Loading screen](Screenshots/Loading screen.png)
