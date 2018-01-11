@@ -43,7 +43,7 @@ function inputEventHandler(event) {
   
   if ((event.key === "Enter" && documentHasEventListener) || event.type === "click") {
     // If last input section, query TasteDive
-    if (event.target.id === "favorite-movie-txt") {
+    if ($("section:not(.hidden)").attr("id") === "get-favorite-movie") {
       getRecommendationFromTasteDive();
       generateLoadingHTML();
     }
