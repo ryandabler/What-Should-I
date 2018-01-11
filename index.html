@@ -15,14 +15,14 @@
           <span class="responsive">What</span>
           <span class="responsive">should</span>
           <span class="responsive">I</span>
-          <select id="result-type">
-            <option data-val="___" disabled selected>____</option>
+          <select id="result-type" aria-label="Select experience">
+            <option data-val="_" value="_" disabled selected>____</option>
             <option data-val="read" value="books">read</option>
             <option data-val="listen to" value="music">listen to</option>
             <option data-val="watch" value="movie">watch</option>
           </select>
         </div>
-        <p class="bottom hidden user-msg">Press <span class="keyboard" tabindex="0">Enter</span>!</p>
+        <p class="bottom hidden user-msg">Press <span class="keyboard">Enter</span> or click here!</p>
       </section>
       
       <section id="get-favorite-book" class="splash hidden" aria-live="polite">
@@ -31,9 +31,9 @@
           <span class="responsive">favorite</span>
           <span class="responsive">book</span>
           <span class="responsive">is</span>
-          <input id="favorite-book-txt" class="content-input" type="text">
+          <input id="favorite-book-txt" class="content-input" aria-label="Enter favorite book" type="text">
         </div>
-        <p class="bottom hidden user-msg">Press <span class="keyboard" tabindex="0">Enter</span>!</p>
+        <p class="bottom hidden user-msg">Press <span class="keyboard">Enter</span> or click here!</p>
       </section>
       
       <section id="get-favorite-band" class="splash hidden" aria-live="polite">
@@ -42,9 +42,9 @@
           <span class="responsive">favorite</span>
           <span class="responsive">band</span>
           <span class="responsive">is</span>
-          <input id="favorite-band-txt" class="content-input" type="text">
+          <input id="favorite-band-txt" class="content-input" aria-label="Enter favorite band" type="text">
         </div>
-        <p class="bottom hidden user-msg">Press <span class="keyboard" tabindex="0">Enter</span>!</p>
+        <p class="bottom hidden user-msg">Press <span class="keyboard">Enter</span> or click here!</p>
       </section>
       
       <section id="get-favorite-movie" class="splash hidden" aria-live="polite">
@@ -53,9 +53,9 @@
           <span class="responsive">favorite</span>
           <span class="responsive">movie</span>
           <span class="responsive">is</span>
-          <input id="favorite-movie-txt" class="content-input" type="text">
+          <input id="favorite-movie-txt" class="content-input" aria-label="Enter favorite movie" type="text">
         </div>
-        <p class="bottom hidden user-msg">Press <span class="keyboard" tabindex="0">Enter</span>!</p>
+        <p class="bottom hidden user-msg">Press <span class="keyboard">Enter</span> or click here!</p>
       </section>
       
       <section id="loading-results" class="splash hidden" aria-live="polite">
@@ -63,7 +63,7 @@
           <i id="cog" class="fa fa-cog fa-spin fa-fw" aria-hidden="true"></i> You should <span id="result-type-txt"></span>...
           <div id="result-name"></div>
         </div>
-        <p class="bottom hidden user-msg">Press <span class="keyboard" tabindex="0">Enter</span>!</p>
+        <p class="bottom hidden user-msg">Press <span class="keyboard">Enter</span> or click here!</p>
       </section>
       
       <section id="results" class="splash hidden">
@@ -76,6 +76,8 @@
             <ul id="results-menu">
             </ul>
           </div>
+          
+          <button id="reset-btn" class="keyboard user-msg">Reset</button>
         </div>
       </section>
     </main>
