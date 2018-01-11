@@ -160,6 +160,8 @@ function extractInfo(infoPath, infoNameArr) {
 function generateInfoHTML($infoDiv, infoObj) {
   for (let info in infoObj) {
     if (infoObj.hasOwnProperty(info)) {
+      // infoObj[info] will be an array, so join all elements together
+      // separated by commas
       let infoHTML = `<p><b>${info}</b>: ${infoObj[info].join(", ")}</p>`;
       $infoDiv.append(infoHTML);
     }
@@ -307,6 +309,7 @@ function renderResultToDOM() {
   
   $contentWrapper.append(htmlObject.contentWrapper.divs);
   
+  // Set first menu item as the active one
   htmlObject.resultsMenu[0].addClass("menu-item-active")
                            .attr("aria-pressed", "true");
   $resultsMenu.append(htmlObject.resultsMenu);
@@ -421,7 +424,7 @@ function getArtistInformationFromMusicGraph(artistName) {
 }
 
 async function getArtistMetadata(artistName) {
-  const musicGraphResponse       = await getArtistInformationFromMusicGraph(artistName).catch(processError);
+  const musicGraphResponse = await getArtistInformationFromMusicGraph(artistName).catch(processError);
   
   if (musicGraphResponse) {
     APP_STATE.resultMetadata.music = musicGraphResponse.data[0];
@@ -483,7 +486,7 @@ function getInformationFromTheMovieDb(movieTitle) {
 }
 
 async function getMovieMetadata(movieTitle) {
-  const theMovieDbResponse       = await getInformationFromTheMovieDb(movieTitle);
+  const theMovieDbResponse       = await getInformationFromTheMovieDb(movieTitle).catch(processError);
   APP_STATE.resultMetadata.movie = theMovieDbResponse.results[0];
     
   const movieId = APP_STATE.resultMetadata.movie.id;
@@ -510,16 +513,12 @@ function processTasteDiveResponse(response) {
   }
 }
 
-function queryAPI(endpointURL, dataType, queryObj, header = null) {
+function queryAPI(endpointURL, dataType, queryObj) {
   const ajaxRequestObject = {url:       endpointURL,
                              dataType:  dataType,
                              method:   "GET",
                              data:      queryObj
                             };
-  
-  if (header !== null) {
-    ajaxRequestObject.headers = header;
-  }
   
   return $.ajax(ajaxRequestObject);
 }
