@@ -14,10 +14,10 @@ First page
 ![Splash screen](Screenshots/Splash.png)
 
 User input page
-![User input screen](Screenshots/User_input.png)
+![User input screen](Screenshots/User%20input.png)
 
 Loading page
-![Loading screen](Screenshots/Loading screen.png)
+![Loading screen](Screenshots/Loading%20screen.png)
 
 Result page
-![Result screen](Screenshots/Results screen.png)
+![Result screen](Screenshots/Results%20screen.png)
