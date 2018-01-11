@@ -529,9 +529,9 @@ function getRecommendationFromTasteDive() {
         favBand    = $("#favorite-band-txt").val(),
         favMovie   = $("#favorite-movie-txt").val(),
         query      = { q:        `book:${favBook},music:${favBand},movie:${favMovie}`,
-                      type:      APP_STATE.resultType,
-                      k:         TASTEDIVE_KEY,
-                      callback: "dummyCallback"
+                       type:      APP_STATE.resultType,
+                       k:         TASTEDIVE_KEY,
+                       callback: "dummyCallback"
                     };
   
   queryAPI( TASTEDIVE_API_ENDPOINT,
