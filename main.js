@@ -3,8 +3,8 @@
 const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
       GOOGLE_BOOKS_API_ENDPOINT      = "https://www.googleapis.com/books/v1/volumes",
       IDREAMBOOKS_API_ENDPOINT       = "https://idreambooks.com/api/books/reviews.json",
-      MUSICGRAPH_API_ENDPOINT        = "http://api.musicgraph.com/api/v2/artist/",
-      LAST_FM_API_ENDPOINT           = "http://ws.audioscrobbler.com/2.0/",
+      MUSICGRAPH_API_ENDPOINT        = "https://api.musicgraph.com/api/v2/artist/",
+      LAST_FM_API_ENDPOINT           = "https://ws.audioscrobbler.com/2.0/",
       THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie",
       THEMOVIEDB_MOVIE_API_ENDPOINT  = "https://api.themoviedb.org/3/movie/",
       MOVIE_POSTER_URL               = "http://image.tmdb.org/t/p/w780",
@@ -447,9 +447,16 @@ async function getArtistMetadata(artistName) {
 
 function processError(error) {
   markLoadingAsComplete();
+  const $error   = $("<p>"),
+        $details = $("<p>");
   
-  $("#results-wrapper").html(`<p class="large-text">Oops! We had a problem generating your ${APP_STATE.resultType} recommendation.</p>
-  <p>The technical details are: ${error.responseText}</p>`);
+  $error.text(`Oops! We had a problem generating your ${APP_STATE.resultType} recommendation.`);
+  $error.addClass("large-text");
+  $details.text(`The technical details are: ${error.responseText}`);
+  
+  $("#results-wrapper div").remove();
+  $("#results-wrapper").prepend($details)
+                       .prepend($error);
 }
 
 function processMoviePromises(data) {
