@@ -584,8 +584,10 @@ function resetApp() {
   APP_STATE.resultMetadata.music = { },
   APP_STATE.resultMetadata.movie = { };
   
-  // Reset #result-name
+  // Reset DOM elements
   $("#result-name").empty();
+  $("#results-menu").empty();
+  $("#content-wrapper div").remove();
   
   // Reset all inputs
   $("#result-type").val("_");
