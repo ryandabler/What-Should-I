@@ -457,6 +457,7 @@ function processError(error) {
   $("#results-wrapper div").remove();
   $("#results-wrapper").prepend($details)
                        .prepend($error);
+  $("#reset-btn").addClass("bottom");
 }
 
 function processMoviePromises(data) {
@@ -600,7 +601,16 @@ function resetApp() {
   // Reset DOM elements
   $("#result-name").empty();
   $("#results-menu").empty();
-  $("#content-wrapper div").remove();
+  $("#results-wrapper").html(`<div id="img-wrapper" class="wrapper-sec">
+            <img id="banner-img">
+          </div>
+          
+          <div id="content-wrapper" class="wrapper-sec">
+            <ul id="results-menu">
+            </ul>
+          </div>
+          
+          <button id="reset-btn" class="keyboard user-msg">Reset</button>`);
   
   // Reset all inputs
   $("#result-type").val("_");
