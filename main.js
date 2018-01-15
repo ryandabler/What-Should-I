@@ -210,9 +210,8 @@ function extractMovieReviews(movieInfoPath) {
 }
 
 function generateMenu(menuItemsArr) {
-  let $li;
   const liItems = menuItemsArr.map(menuItem => {
-    $li = $("<li>");
+    const $li = $("<li>");
     $li.text(menuItem);
     $li.addClass("menu-item");
     $li.attr("tabindex", 0);
