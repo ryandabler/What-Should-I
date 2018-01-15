@@ -69,10 +69,8 @@ function generateReviewHTML(review) {
   return $review;
 }
 
-function generateReviewSection($reviewDiv) {
-  const reviewsHTML = APP_STATE.resultMetadata.book.critic_reviews.map(review => generateReviewHTML(review));
-  
-  $reviewDiv.append(reviewsHTML);
+function generateReviewSection() {
+  return APP_STATE.resultMetadata.book.critic_reviews.map(review => generateReviewHTML(review));
 }
 
 function generateBookResultHTML() {
@@ -104,8 +102,9 @@ function generateBookResultHTML() {
   
   // Generate reviews
   if (bookInfoPath.critic_reviews && bookInfoPath.critic_reviews.length > 0) {
-    generateReviewSection($reviewDiv);
-  
+    let reviewsHTML = generateReviewSection();
+    
+    $reviewDiv.append(reviewsHTML);
     $reviewDiv.attr("id", "result-reviews");
     $reviewDiv.addClass("hidden");
     returnObj.contentWrapper.divs.push($reviewDiv);
