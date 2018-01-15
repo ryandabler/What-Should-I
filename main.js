@@ -75,8 +75,12 @@ function generateReviewSection($reviewDiv) {
   $reviewDiv.append(reviewsHTML);
 }
 
-function generateBookResultHTML(returnObj) {
-  const $infoDiv       = $("<div>"),
+function generateBookResultHTML() {
+  const returnObj = { bannerImg:      {},
+                      contentWrapper: {},
+                      resultsMenu:    []
+                    },
+        $infoDiv       = $("<div>"),
         $reviewDiv     = $("<div>"),
         menu           = [],
         book           = APP_STATE.results[0],
@@ -168,8 +172,12 @@ function generateInfoHTML($infoDiv, infoObj) {
   }
 }
 
-function generateMusicResultHTML(returnObj) {
-  const $infoDiv       = $("<div>"),
+function generateMusicResultHTML() {
+  const returnObj = { bannerImg:      {},
+                      contentWrapper: {},
+                      resultsMenu:    []
+                    },
+        $infoDiv       = $("<div>"),
         $discoDiv      = $("<div>"),
         menu           = [],
         artist         = APP_STATE.results[0],
@@ -223,8 +231,12 @@ function generateMenu(menuItemsArr) {
   return liItems;
 }
 
-function generateMovieResultHTML(returnObj) {
-  const $infoDiv      = $("<div>"),
+function generateMovieResultHTML() {
+  const returnObj = { bannerImg:      {},
+                      contentWrapper: {},
+                      resultsMenu:    []
+                    },
+        $infoDiv      = $("<div>"),
         $trailerDiv   = $("<div>"),
         $reviewsDiv   = $("<div>"),
         $moreDiv      = $("<div>"),
@@ -285,16 +297,13 @@ function markLoadingAsComplete() {
 }
 
 function renderResultToDOM() {
-  const htmlObject = { bannerImg:      {},
-                       contentWrapper: {},
-                       resultsMenu:    []
-                     };
+  let htmlObject;
   if (APP_STATE.resultType === "books") {
-    generateBookResultHTML(htmlObject);
+    htmlObject = generateBookResultHTML();
   } else if (APP_STATE.resultType === "music") {
-    generateMusicResultHTML(htmlObject);
+    htmlObject = generateMusicResultHTML();
   } else if (APP_STATE.resultType === "movie") {
-    generateMovieResultHTML(htmlObject);
+    htmlObject = generateMovieResultHTML();
   } else {
     
   }
@@ -302,7 +311,7 @@ function renderResultToDOM() {
   const $banner         = $("#banner-img"),
         $contentWrapper = $("#content-wrapper"),
         $resultsMenu    = $("#results-menu");
-      
+  
   $banner.attr("src", htmlObject.bannerImg.src);
   $banner.attr("alt", htmlObject.bannerImg.alt);
   
@@ -349,7 +358,7 @@ function processBookPromises(data) {
                     title:     iDreamBooksData.book.title,
                     pages:     iDreamBooksData.book.pages
                   };
-                
+  
   dataObj.critic_reviews = iDreamBooksData.book.critic_reviews.map(elem =>
   ({
     url:     elem.review_link,
