@@ -356,14 +356,18 @@ function processBookPromises(data) {
                     pages:     iDreamBooksData.book.pages
                   };
   
-  dataObj.critic_reviews = iDreamBooksData.book.critic_reviews.map(elem =>
-  ({
-    url:     elem.review_link,
-    author:  elem.source,
-    content: elem.snippet,
-    date:    elem.review_date,
-    stars:   elem.star_rating
-  }));
+  try {
+    dataObj.critic_reviews = iDreamBooksData.book.critic_reviews.map(elem =>
+    ({
+      url:     elem.review_link,
+      author:  elem.source,
+      content: elem.snippet,
+      date:    elem.review_date,
+      stars:   elem.star_rating
+    }));
+  } catch(error) {
+    dataObj.critic_reviews = [];
+  }
   
   Object.assign(APP_STATE.resultMetadata.book, dataObj);
   
@@ -452,7 +456,7 @@ function processError(error) {
   
   $error.text(`Oops! We had a problem generating your ${APP_STATE.resultType} recommendation.`);
   $error.addClass("large-text");
-  $details.text(`The technical details are: ${error.responseText}`);
+  $details.text(`The technical details are: ${error.responseText || error.statusText || error.message}`);
   
   $("#results-wrapper div").remove();
   $("#results-wrapper").prepend($details)
