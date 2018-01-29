@@ -2,9 +2,9 @@
 
 const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
       GOOGLE_BOOKS_API_ENDPOINT      = "https://www.googleapis.com/books/v1/volumes",
-      IDREAMBOOKS_API_ENDPOINT       = "http://idreambooks.com/api/books/reviews.json",
-      MUSICGRAPH_API_ENDPOINT        = "http://api.musicgraph.com/api/v2/artist/",
-      LAST_FM_API_ENDPOINT           = "http://ws.audioscrobbler.com/2.0/",
+      IDREAMBOOKS_API_ENDPOINT       = "https://idreambooks.com/api/books/reviews.json",
+      MUSICGRAPH_API_ENDPOINT        = "https://api.musicgraph.com/api/v2/artist/",
+      LAST_FM_API_ENDPOINT           = "https://ws.audioscrobbler.com/2.0/",
       THEMOVIEDB_SEARCH_API_ENDPOINT = "https://api.themoviedb.org/3/search/movie",
       THEMOVIEDB_MOVIE_API_ENDPOINT  = "https://api.themoviedb.org/3/movie/",
       MOVIE_POSTER_URL               = "http://image.tmdb.org/t/p/w780",
@@ -39,9 +39,7 @@ function generateLoadingHTML() {
 }
 
 function inputEventHandler(event) {
-  const documentHasEventListener = $._data(document, "events") !== undefined;
-  
-  if ((event.key === "Enter" && documentHasEventListener) || event.type === "click") {
+  if (event.key === "Enter" || event.type === "click") {
     // If last input section, query TasteDive
     if ($("section:not(.hidden)").attr("id") === "get-favorite-movie") {
       getRecommendationFromTasteDive();
@@ -69,14 +67,16 @@ function generateReviewHTML(review) {
   return $review;
 }
 
-function generateReviewSection($reviewDiv) {
-  const reviewsHTML = APP_STATE.resultMetadata.book.critic_reviews.map(review => generateReviewHTML(review));
-  
-  $reviewDiv.append(reviewsHTML);
+function generateReviewSection() {
+  return APP_STATE.resultMetadata.book.critic_reviews.map(review => generateReviewHTML(review));
 }
 
-function generateBookResultHTML(returnObj) {
-  const $infoDiv       = $("<div>"),
+function generateBookResultHTML() {
+  const returnObj = { bannerImg:      {},
+                      contentWrapper: {},
+                      resultsMenu:    []
+                    },
+        $infoDiv       = $("<div>"),
         $reviewDiv     = $("<div>"),
         menu           = [],
         book           = APP_STATE.results[0],
@@ -100,8 +100,9 @@ function generateBookResultHTML(returnObj) {
   
   // Generate reviews
   if (bookInfoPath.critic_reviews && bookInfoPath.critic_reviews.length > 0) {
-    generateReviewSection($reviewDiv);
-  
+    let reviewsHTML = generateReviewSection();
+    
+    $reviewDiv.append(reviewsHTML);
     $reviewDiv.attr("id", "result-reviews");
     $reviewDiv.addClass("hidden");
     returnObj.contentWrapper.divs.push($reviewDiv);
@@ -160,14 +161,20 @@ function extractInfo(infoPath, infoNameArr) {
 function generateInfoHTML($infoDiv, infoObj) {
   for (let info in infoObj) {
     if (infoObj.hasOwnProperty(info)) {
+      // infoObj[info] will be an array, so join all elements together
+      // separated by commas
       let infoHTML = `<p><b>${info}</b>: ${infoObj[info].join(", ")}</p>`;
       $infoDiv.append(infoHTML);
     }
   }
 }
 
-function generateMusicResultHTML(returnObj) {
-  const $infoDiv       = $("<div>"),
+function generateMusicResultHTML() {
+  const returnObj = { bannerImg:      {},
+                      contentWrapper: {},
+                      resultsMenu:    []
+                    },
+        $infoDiv       = $("<div>"),
         $discoDiv      = $("<div>"),
         menu           = [],
         artist         = APP_STATE.results[0],
@@ -208,9 +215,8 @@ function extractMovieReviews(movieInfoPath) {
 }
 
 function generateMenu(menuItemsArr) {
-  let $li;
   const liItems = menuItemsArr.map(menuItem => {
-    $li = $("<li>");
+    const $li = $("<li>");
     $li.text(menuItem);
     $li.addClass("menu-item");
     $li.attr("tabindex", 0);
@@ -222,8 +228,12 @@ function generateMenu(menuItemsArr) {
   return liItems;
 }
 
-function generateMovieResultHTML(returnObj) {
-  const $infoDiv      = $("<div>"),
+function generateMovieResultHTML() {
+  const returnObj = { bannerImg:      {},
+                      contentWrapper: {},
+                      resultsMenu:    []
+                    },
+        $infoDiv      = $("<div>"),
         $trailerDiv   = $("<div>"),
         $reviewsDiv   = $("<div>"),
         $moreDiv      = $("<div>"),
@@ -284,16 +294,13 @@ function markLoadingAsComplete() {
 }
 
 function renderResultToDOM() {
-  const htmlObject = { bannerImg:      {},
-                       contentWrapper: {},
-                       resultsMenu:    []
-                     };
+  let htmlObject;
   if (APP_STATE.resultType === "books") {
-    generateBookResultHTML(htmlObject);
+    htmlObject = generateBookResultHTML();
   } else if (APP_STATE.resultType === "music") {
-    generateMusicResultHTML(htmlObject);
+    htmlObject = generateMusicResultHTML();
   } else if (APP_STATE.resultType === "movie") {
-    generateMovieResultHTML(htmlObject);
+    htmlObject = generateMovieResultHTML();
   } else {
     
   }
@@ -301,12 +308,13 @@ function renderResultToDOM() {
   const $banner         = $("#banner-img"),
         $contentWrapper = $("#content-wrapper"),
         $resultsMenu    = $("#results-menu");
-      
+  
   $banner.attr("src", htmlObject.bannerImg.src);
   $banner.attr("alt", htmlObject.bannerImg.alt);
   
   $contentWrapper.append(htmlObject.contentWrapper.divs);
   
+  // Set first menu item as the active one
   htmlObject.resultsMenu[0].addClass("menu-item-active")
                            .attr("aria-pressed", "true");
   $resultsMenu.append(htmlObject.resultsMenu);
@@ -347,15 +355,19 @@ function processBookPromises(data) {
                     title:     iDreamBooksData.book.title,
                     pages:     iDreamBooksData.book.pages
                   };
-                
-  dataObj.critic_reviews = iDreamBooksData.book.critic_reviews.map(elem =>
-  ({
-    url:     elem.review_link,
-    author:  elem.source,
-    content: elem.snippet,
-    date:    elem.review_date,
-    stars:   elem.star_rating
-  }));
+  
+  try {
+    dataObj.critic_reviews = iDreamBooksData.book.critic_reviews.map(elem =>
+    ({
+      url:     elem.review_link,
+      author:  elem.source,
+      content: elem.snippet,
+      date:    elem.review_date,
+      stars:   elem.star_rating
+    }));
+  } catch(error) {
+    dataObj.critic_reviews = [];
+  }
   
   Object.assign(APP_STATE.resultMetadata.book, dataObj);
   
@@ -421,7 +433,7 @@ function getArtistInformationFromMusicGraph(artistName) {
 }
 
 async function getArtistMetadata(artistName) {
-  const musicGraphResponse       = await getArtistInformationFromMusicGraph(artistName).catch(processError);
+  const musicGraphResponse = await getArtistInformationFromMusicGraph(artistName).catch(processError);
   
   if (musicGraphResponse) {
     APP_STATE.resultMetadata.music = musicGraphResponse.data[0];
@@ -439,9 +451,17 @@ async function getArtistMetadata(artistName) {
 
 function processError(error) {
   markLoadingAsComplete();
+  const $error   = $("<p>"),
+        $details = $("<p>");
   
-  $("#results-wrapper").html(`<p class="large-text">Oops! We had a problem generating your ${APP_STATE.resultType} recommendation.</p>
-  <p>The technical details are: ${error.responseText}</p>`);
+  $error.text(`Oops! We had a problem generating your ${APP_STATE.resultType} recommendation.`);
+  $error.addClass("large-text");
+  $details.text(`The technical details are: ${error.responseText || error.statusText || error.message}`);
+  
+  $("#results-wrapper div").remove();
+  $("#results-wrapper").prepend($details)
+                       .prepend($error);
+  $("#reset-btn").addClass("bottom");
 }
 
 function processMoviePromises(data) {
@@ -483,7 +503,7 @@ function getInformationFromTheMovieDb(movieTitle) {
 }
 
 async function getMovieMetadata(movieTitle) {
-  const theMovieDbResponse       = await getInformationFromTheMovieDb(movieTitle);
+  const theMovieDbResponse       = await getInformationFromTheMovieDb(movieTitle).catch(processError);
   APP_STATE.resultMetadata.movie = theMovieDbResponse.results[0];
     
   const movieId = APP_STATE.resultMetadata.movie.id;
@@ -510,16 +530,12 @@ function processTasteDiveResponse(response) {
   }
 }
 
-function queryAPI(endpointURL, dataType, queryObj, header = null) {
+function queryAPI(endpointURL, dataType, queryObj) {
   const ajaxRequestObject = {url:       endpointURL,
                              dataType:  dataType,
                              method:   "GET",
                              data:      queryObj
                             };
-  
-  if (header !== null) {
-    ajaxRequestObject.headers = header;
-  }
   
   return $.ajax(ajaxRequestObject);
 }
@@ -530,9 +546,9 @@ function getRecommendationFromTasteDive() {
         favBand    = $("#favorite-band-txt").val(),
         favMovie   = $("#favorite-movie-txt").val(),
         query      = { q:        `book:${favBook},music:${favBand},movie:${favMovie}`,
-                      type:      APP_STATE.resultType,
-                      k:         TASTEDIVE_KEY,
-                      callback: "dummyCallback"
+                       type:      APP_STATE.resultType,
+                       k:         TASTEDIVE_KEY,
+                       callback: "dummyCallback"
                     };
   
   queryAPI( TASTEDIVE_API_ENDPOINT,
@@ -586,8 +602,19 @@ function resetApp() {
   APP_STATE.resultMetadata.music = { },
   APP_STATE.resultMetadata.movie = { };
   
-  // Reset #result-name
+  // Reset DOM elements
   $("#result-name").empty();
+  $("#results-menu").empty();
+  $("#results-wrapper").html(`<div id="img-wrapper" class="wrapper-sec">
+            <img id="banner-img">
+          </div>
+          
+          <div id="content-wrapper" class="wrapper-sec">
+            <ul id="results-menu">
+            </ul>
+          </div>
+          
+          <button id="reset-btn" class="keyboard user-msg">Reset</button>`);
   
   // Reset all inputs
   $("#result-type").val("_");
