@@ -401,7 +401,7 @@ async function getBookMetadata(bookTitle) {
     getInformationFromIDreamBooks(isbn),
   ])
     .then(processBookPromises)
-    .catch(processError);
+    .catch(processError());
 }
 
 function processMusicPromises(data) {
@@ -450,7 +450,7 @@ function getArtistInformationFromMusicGraph(artistName) {
 }
 
 async function getArtistMetadata(artistName) {
-  const musicGraphResponse = await getArtistInformationFromMusicGraph(artistName).catch(processError);
+  const musicGraphResponse = await getArtistInformationFromMusicGraph(artistName).catch(processError(null, "The MusicGraph API did not respond."));
   
   if (musicGraphResponse) {
     APP_STATE.resultMetadata.music = musicGraphResponse.data[0];
@@ -462,23 +462,27 @@ async function getArtistMetadata(artistName) {
       getArtistInformationFromLastFm(artistName)
     ])
       .then(processMusicPromises)
-      .catch(processError);
+      .catch(processError());
   }
 }
 
-function processError(error) {
-  markLoadingAsComplete();
-  const $error   = $("<p>"),
-        $details = $("<p>");
-  
-  $error.text(`Oops! We had a problem generating your ${APP_STATE.resultType} recommendation.`);
-  $error.addClass("large-text");
-  $details.text(`The technical details are: ${error.responseText || error.statusText || error.message}`);
-  
-  $("#results-wrapper div").remove();
-  $("#results-wrapper").prepend($details)
-                       .prepend($error);
-  $("#reset-btn").addClass("bottom");
+function processError(errorText = null, detailText = null) {
+  return function(error) {
+    markLoadingAsComplete();
+    const $error   = $("<p>"),
+          $details = $("<p>");
+    
+    $error.text(errorText || `Oops! We had a problem generating your ${APP_STATE.resultType} recommendation.`);
+    $error.addClass("large-text");
+    $details.text(detailText || `The technical details are: ${error.responseText || error.statusText || error.message}`);
+    
+    $("#results-wrapper div").remove();
+    $("#results-wrapper").prepend($details)
+                         .prepend($error);
+    $("#reset-btn").addClass("bottom");
+    
+    scrollToNextSection();
+  };
 }
 
 function processMoviePromises(data) {
@@ -520,7 +524,7 @@ function getInformationFromTheMovieDb(movieTitle) {
 }
 
 async function getMovieMetadata(movieTitle) {
-  const theMovieDbResponse       = await getInformationFromTheMovieDb(movieTitle).catch(processError);
+  const theMovieDbResponse       = await getInformationFromTheMovieDb(movieTitle).catch(processError());
   APP_STATE.resultMetadata.movie = theMovieDbResponse.results[0];
     
   const movieId = APP_STATE.resultMetadata.movie.id;
@@ -529,7 +533,7 @@ async function getMovieMetadata(movieTitle) {
     getMovieInformation(movieId),
   ])
     .then(processMoviePromises)
-    .catch(processError);
+    .catch(processError());
 }
 
 function processTasteDiveResponse(response) {
@@ -572,7 +576,10 @@ function getRecommendationFromTasteDive() {
            "jsonp",
             query
           )
-    .then(processTasteDiveResponse);
+    .then(processTasteDiveResponse)
+    .catch(processError("Oops! We had an issue talking to our recommendation engine!",
+                        "Please try again.")
+          );
 }
 
 function switchDisplayDiv(event) {
