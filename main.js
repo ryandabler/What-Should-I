@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
       GOOGLE_BOOKS_API_ENDPOINT      = "https://www.googleapis.com/books/v1/volumes",
@@ -18,6 +18,13 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
                                     }
                   };
 
+function incrementProgressBar() {
+  const currentProgress = $(".pct-done"),
+        nextProgress    = currentProgress.next();
+  
+  nextProgress.addClass("pct-done");
+}
+
 function scrollToNextSection() {
   const $currentSec = $("section:not(.hidden)"),
         $nextSec    = $currentSec.next(),
@@ -26,6 +33,15 @@ function scrollToNextSection() {
   $currentSec.toggleClass("hidden");
   $nextSec   .toggleClass("hidden");
   $(document).off("keypress");
+  
+  // Manage progress bar
+  if ($currentSec.attr("id") === "instructions") {
+    $("#progress-bar").show();
+  } else if ($currentSec.attr("id") === "loading-results") {
+    $("#progress-bar").hide();
+  } else {
+    incrementProgressBar();
+  }
   
   // Toggle focus on input if there is one
   if ($nextInput.length > 0) {
@@ -288,6 +304,7 @@ function generateMovieResultHTML() {
 }
 
 function markLoadingAsComplete() {
+  $("#cog").hide();
   $("#result-name").text(APP_STATE.results[0]);
   displayUserMessage();
   $("#loading-results").keypress(inputEventHandler);
@@ -579,16 +596,16 @@ function switchDisplayDiv(event) {
 
 function displayUserMessage(event = null) {
   if (event && event.key !== "Enter") {
-    const $userMsg = $("section:not(.hidden) .user-msg");
-    $userMsg.removeClass("hidden");
+    const $nextBtn = $("section:not(.hidden) .js-nav-btn");
+    $nextBtn.removeClass("hidden");
     
     //Remove old event listener on event.target and replace
     $(event.target).off();
     $(event.target).keypress(inputEventHandler);
     $(document).keypress(inputEventHandler);
   } else if (event === null) {
-    const $userMsg = $("section:not(.hidden) .user-msg");
-    $userMsg.removeClass("hidden");
+    const $nextBtn = $("section:not(.hidden) .js-nav-btn");
+    $nextBtn.removeClass("hidden");
     $(document).keypress(inputEventHandler);
   }
 }
@@ -603,6 +620,8 @@ function resetApp() {
   APP_STATE.resultMetadata.movie = { };
   
   // Reset DOM elements
+  $(".pct-done:not(:first-child)").removeClass("pct-done");
+  $("#cog").show();
   $("#result-name").empty();
   $("#results-menu").empty();
   $("#results-wrapper").html(`<div id="img-wrapper" class="wrapper-sec">
@@ -625,7 +644,7 @@ function resetApp() {
   addEventListeners();
   
   // Hide user messages
-  $("p.user-msg").addClass("hidden");
+  $(".js-nav-btn").addClass("hidden");
   
   // Switch to beginning
   const $currentSec = $("section:not(.hidden)"),
@@ -636,8 +655,9 @@ function resetApp() {
 }
 
 function addEventListeners() {
+  $("#begin-btn")         .click   (inputEventHandler);
   $("#result-type")       .change  (displayUserMessage);
-  $(".user-msg")          .click   (inputEventHandler);
+  $(".js-nav-btn")        .click   (inputEventHandler);
   $("#favorite-book-txt") .keypress(displayUserMessage);
   $("#favorite-band-txt") .keypress(displayUserMessage);
   $("#favorite-movie-txt").keypress(displayUserMessage);
@@ -647,6 +667,7 @@ function addEventListeners() {
 }
 
 function initApp() {
+  $("#progress-bar").hide();
   addEventListeners();
 }
 

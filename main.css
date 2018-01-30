@@ -17,6 +17,7 @@ body {
   margin: 0;
   background-color: var(--color-darker);
   color: var(--color-light);
+  font-family: Arial;
 }
 
 .splash {
@@ -38,10 +39,6 @@ body {
   display: block;
 }
 
-.hidden {
-  display: none;
-}
-
 .bottom {
   position: fixed;
   bottom: 0;
@@ -55,6 +52,8 @@ body {
   font-style: italic;
   text-align: center;
   width: 100%;
+  font-size: 13px;
+  cursor: pointer;
 }
 
 .keyboard {
@@ -71,6 +70,19 @@ body {
   outline: none;
 }
 
+.button {
+  padding: 10px;
+  color: var(--color-pop);
+  font-size: 25px;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto 10px auto;
+}
+
+.hidden {
+  display: none;
+}
+
 #result-type {
   font-size: 50px;
   border: none;
@@ -78,6 +90,7 @@ body {
   color: var(--color-pop);
   -webkit-appearance: none;
   -moz-appearance: none;
+  cursor: pointer;
 }
 
 #result-type:focus {
@@ -194,7 +207,34 @@ body {
   margin: 20px auto 10px auto;
   width: 40vw;
   max-width: 200px;
-  cursor: pointer;
+}
+
+#progress-bar {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 25px;
+  display: flex;
+  justify-content: space-between;
+  max-width: 300px;
+}
+
+.pct {
+  width: 25px;
+  height: 100%;
+  background-color: #D0CDA736;
+  display: inline-block;
+  border: 1px solid #D0CDA7;
+  border-radius: 50%;
+}
+
+.pct:not(:last-child) {
+  margin-right: 20px;
+}
+
+.pct-done {
+  background-color: #D0CDA7;
 }
 
 @media only screen and (min-width: 640px) {
@@ -252,5 +292,17 @@ body {
   #banner-img {
     max-width: 39vw;
     height: 70vh;
+  }
+  
+  .user-msg {
+    font-size: 20px;
+  }
+  
+  #instruction-content {
+    width: 600px;
+  }
+  
+  .button {
+    padding: 10px 25px;
   }
 }
