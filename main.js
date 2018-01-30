@@ -176,7 +176,7 @@ function extractInfo(infoPath, infoNameArr) {
 
 function generateInfoHTML($infoDiv, infoObj) {
   for (let info in infoObj) {
-    if (infoObj.hasOwnProperty(info)) {
+    if (infoObj.hasOwnProperty(info) && infoObj[info].length > 0) {
       // infoObj[info] will be an array, so join all elements together
       // separated by commas
       let infoHTML = `<p><b>${info}</b>: ${infoObj[info].join(", ")}</p>`;
