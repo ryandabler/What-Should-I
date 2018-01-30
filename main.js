@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
       GOOGLE_BOOKS_API_ENDPOINT      = "https://www.googleapis.com/books/v1/volumes",
@@ -18,6 +18,13 @@ const TASTEDIVE_API_ENDPOINT         = "https://tastedive.com/api/similar",
                                     }
                   };
 
+function incrementProgressBar() {
+  const currentProgress = $(".pct-done"),
+        nextProgress    = currentProgress.next();
+  
+  nextProgress.addClass("pct-done");
+}
+
 function scrollToNextSection() {
   const $currentSec = $("section:not(.hidden)"),
         $nextSec    = $currentSec.next(),
@@ -26,6 +33,15 @@ function scrollToNextSection() {
   $currentSec.toggleClass("hidden");
   $nextSec   .toggleClass("hidden");
   $(document).off("keypress");
+  
+  // Manage progress bar
+  if ($currentSec.attr("id") === "instructions") {
+    $("#progress-bar").show();
+  } else if ($currentSec.attr("id") === "loading-results") {
+    $("#progress-bar").hide();
+  } else {
+    incrementProgressBar();
+  }
   
   // Toggle focus on input if there is one
   if ($nextInput.length > 0) {
@@ -160,7 +176,7 @@ function extractInfo(infoPath, infoNameArr) {
 
 function generateInfoHTML($infoDiv, infoObj) {
   for (let info in infoObj) {
-    if (infoObj.hasOwnProperty(info)) {
+    if (infoObj.hasOwnProperty(info) && infoObj[info].length > 0) {
       // infoObj[info] will be an array, so join all elements together
       // separated by commas
       let infoHTML = `<p><b>${info}</b>: ${infoObj[info].join(", ")}</p>`;
@@ -288,6 +304,7 @@ function generateMovieResultHTML() {
 }
 
 function markLoadingAsComplete() {
+  $("#cog").hide();
   $("#result-name").text(APP_STATE.results[0]);
   displayUserMessage();
   $("#loading-results").keypress(inputEventHandler);
@@ -384,7 +401,7 @@ async function getBookMetadata(bookTitle) {
     getInformationFromIDreamBooks(isbn),
   ])
     .then(processBookPromises)
-    .catch(processError);
+    .catch(processError());
 }
 
 function processMusicPromises(data) {
@@ -433,7 +450,7 @@ function getArtistInformationFromMusicGraph(artistName) {
 }
 
 async function getArtistMetadata(artistName) {
-  const musicGraphResponse = await getArtistInformationFromMusicGraph(artistName).catch(processError);
+  const musicGraphResponse = await getArtistInformationFromMusicGraph(artistName).catch(processError(null, "The MusicGraph API did not respond."));
   
   if (musicGraphResponse) {
     APP_STATE.resultMetadata.music = musicGraphResponse.data[0];
@@ -445,23 +462,27 @@ async function getArtistMetadata(artistName) {
       getArtistInformationFromLastFm(artistName)
     ])
       .then(processMusicPromises)
-      .catch(processError);
+      .catch(processError());
   }
 }
 
-function processError(error) {
-  markLoadingAsComplete();
-  const $error   = $("<p>"),
-        $details = $("<p>");
-  
-  $error.text(`Oops! We had a problem generating your ${APP_STATE.resultType} recommendation.`);
-  $error.addClass("large-text");
-  $details.text(`The technical details are: ${error.responseText || error.statusText || error.message}`);
-  
-  $("#results-wrapper div").remove();
-  $("#results-wrapper").prepend($details)
-                       .prepend($error);
-  $("#reset-btn").addClass("bottom");
+function processError(errorText = null, detailText = null) {
+  return function(error) {
+    markLoadingAsComplete();
+    const $error   = $("<p>"),
+          $details = $("<p>");
+    
+    $error.text(errorText || `Oops! We had a problem generating your ${APP_STATE.resultType} recommendation.`);
+    $error.addClass("large-text");
+    $details.text(detailText || `The technical details are: ${error.responseText || error.statusText || error.message}`);
+    
+    $("#results-wrapper div").remove();
+    $("#results-wrapper").prepend($details)
+                         .prepend($error);
+    $("#reset-btn").addClass("bottom");
+    
+    scrollToNextSection();
+  };
 }
 
 function processMoviePromises(data) {
@@ -503,7 +524,7 @@ function getInformationFromTheMovieDb(movieTitle) {
 }
 
 async function getMovieMetadata(movieTitle) {
-  const theMovieDbResponse       = await getInformationFromTheMovieDb(movieTitle).catch(processError);
+  const theMovieDbResponse       = await getInformationFromTheMovieDb(movieTitle).catch(processError());
   APP_STATE.resultMetadata.movie = theMovieDbResponse.results[0];
     
   const movieId = APP_STATE.resultMetadata.movie.id;
@@ -512,7 +533,7 @@ async function getMovieMetadata(movieTitle) {
     getMovieInformation(movieId),
   ])
     .then(processMoviePromises)
-    .catch(processError);
+    .catch(processError());
 }
 
 function processTasteDiveResponse(response) {
@@ -555,7 +576,10 @@ function getRecommendationFromTasteDive() {
            "jsonp",
             query
           )
-    .then(processTasteDiveResponse);
+    .then(processTasteDiveResponse)
+    .catch(processError("Oops! We had an issue talking to our recommendation engine!",
+                        "Please try again.")
+          );
 }
 
 function switchDisplayDiv(event) {
@@ -579,16 +603,16 @@ function switchDisplayDiv(event) {
 
 function displayUserMessage(event = null) {
   if (event && event.key !== "Enter") {
-    const $userMsg = $("section:not(.hidden) .user-msg");
-    $userMsg.removeClass("hidden");
+    const $nextBtn = $("section:not(.hidden) .js-nav-btn");
+    $nextBtn.removeClass("hidden");
     
     //Remove old event listener on event.target and replace
     $(event.target).off();
     $(event.target).keypress(inputEventHandler);
     $(document).keypress(inputEventHandler);
   } else if (event === null) {
-    const $userMsg = $("section:not(.hidden) .user-msg");
-    $userMsg.removeClass("hidden");
+    const $nextBtn = $("section:not(.hidden) .js-nav-btn");
+    $nextBtn.removeClass("hidden");
     $(document).keypress(inputEventHandler);
   }
 }
@@ -603,6 +627,8 @@ function resetApp() {
   APP_STATE.resultMetadata.movie = { };
   
   // Reset DOM elements
+  $(".pct-done:not(:first-child)").removeClass("pct-done");
+  $("#cog").show();
   $("#result-name").empty();
   $("#results-menu").empty();
   $("#results-wrapper").html(`<div id="img-wrapper" class="wrapper-sec">
@@ -625,7 +651,7 @@ function resetApp() {
   addEventListeners();
   
   // Hide user messages
-  $("p.user-msg").addClass("hidden");
+  $(".js-nav-btn").addClass("hidden");
   
   // Switch to beginning
   const $currentSec = $("section:not(.hidden)"),
@@ -636,8 +662,9 @@ function resetApp() {
 }
 
 function addEventListeners() {
+  $("#begin-btn")         .click   (inputEventHandler);
   $("#result-type")       .change  (displayUserMessage);
-  $(".user-msg")          .click   (inputEventHandler);
+  $(".js-nav-btn")        .click   (inputEventHandler);
   $("#favorite-book-txt") .keypress(displayUserMessage);
   $("#favorite-band-txt") .keypress(displayUserMessage);
   $("#favorite-movie-txt").keypress(displayUserMessage);
@@ -647,6 +674,7 @@ function addEventListeners() {
 }
 
 function initApp() {
+  $("#progress-bar").hide();
   addEventListeners();
 }
 
